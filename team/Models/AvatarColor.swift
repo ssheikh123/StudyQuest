@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum AvatarColor: String, CaseIterable, Identifiable {
+enum AvatarColor: String, CaseIterable, Identifiable, Codable {
     case sky = "Sky"
     case mint = "Mint"
     case coral = "Coral"

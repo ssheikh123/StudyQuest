@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum AvatarAccessory: String, CaseIterable, Identifiable {
+enum AvatarAccessory: String, CaseIterable, Identifiable, Codable {
     case stars = "Stars"
     case goggles = "Goggles"
     case bolt = "Bolt"

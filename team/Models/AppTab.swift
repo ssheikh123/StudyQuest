@@ -18,7 +18,7 @@ enum AppTab: Int, CaseIterable, Identifiable {
         case .rewards:
             return "Rewards"
         case .chats:
-            return "Chats"
+            return "Community"
         case .profile:
             return "Profile"
         }
@@ -29,11 +29,11 @@ enum AppTab: Int, CaseIterable, Identifiable {
         case .home:
             return "house.fill"
         case .lessons:
-            return "book.closed.fill"
+            return "books.vertical.fill"
         case .rewards:
             return "gift.fill"
         case .chats:
-            return "message.fill"
+            return "bubble.left.and.bubble.right.fill"
         case .profile:
             return "person.crop.circle.fill"
         }

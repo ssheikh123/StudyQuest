@@ -3,10 +3,11 @@ import SwiftUI
 struct ProfileView: View {
     let xp: Int
     let level: Int
-    let completedLessonIDs: Set<String>
+    let progress: LessonProgress
     let settings: AppAccessibilitySettings
     @Binding var avatarColor: AvatarColor
     @Binding var avatarAccessory: AvatarAccessory
+    @Binding var learningFocusSubjectID: String
     @Binding var accessibilitySettings: AppAccessibilitySettings
 
     var body: some View {
@@ -14,6 +15,7 @@ struct ProfileView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     profilePlaceholder
+                    learningFocusSection
                     currentTools
                 }
                 .padding(18)
@@ -46,6 +48,23 @@ struct ProfileView: View {
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius))
     }
 
+    private var learningFocusSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(title: "Learning Focus", subtitle: "+10% XP and +5 coins for this subject")
+
+            ForEach(CurriculumData.subjects) { subject in
+                LearningFocusCard(
+                    subject: subject,
+                    isSelected: learningFocusSubjectID == subject.id,
+                    settings: settings,
+                    action: { learningFocusSubjectID = subject.id }
+                )
+            }
+        }
+        .padding(18)
+        .studyQuestCard(settings: settings, radius: AppTheme.cornerRadius)
+    }
+
     private var currentTools: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Current Tools")
@@ -67,8 +86,7 @@ struct ProfileView: View {
                 ProgressDashboardView(
                     xp: xp,
                     level: level,
-                    completedCount: completedLessonIDs.count,
-                    totalLessons: STEMLesson.lessons.count,
+                    progress: progress,
                     avatarColor: avatarColor,
                     avatarAccessory: avatarAccessory,
                     settings: settings

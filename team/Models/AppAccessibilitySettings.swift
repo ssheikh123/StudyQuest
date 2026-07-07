@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct AppAccessibilitySettings {
+struct AppAccessibilitySettings: Codable, Equatable {
     var darkMode = false
     var colorblindMode = false
     var largerText = false
@@ -10,18 +10,26 @@ struct AppAccessibilitySettings {
     var buttonLabels = true
 
     var accentColor: Color {
-        colorblindMode ? .orange : .purple
+        colorblindMode ? .orange : AppTheme.primary
     }
 
     var screenBackground: Color {
-        darkMode ? .black : Color(red: 0.96, green: 0.97, blue: 1.0)
+        darkMode ? AppTheme.darkBackground : AppTheme.background
     }
 
     var alternateScreenBackground: Color {
-        darkMode ? .black : Color(red: 0.95, green: 0.98, blue: 0.97)
+        darkMode ? AppTheme.darkBackground : AppTheme.background
     }
 
     var cardBackground: Color {
-        darkMode ? Color(red: 0.04, green: 0.04, blue: 0.05) : Color(.secondarySystemGroupedBackground)
+        AppTheme.cardBackground(darkMode: darkMode)
+    }
+
+    var primaryText: Color {
+        AppTheme.textPrimary(darkMode: darkMode)
+    }
+
+    var secondaryText: Color {
+        AppTheme.textSecondary(darkMode: darkMode)
     }
 }

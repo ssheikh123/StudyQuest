@@ -3,9 +3,9 @@ import SwiftUI
 struct LessonsHomeView: View {
     let xp: Int
     let level: Int
-    let completedLessonIDs: Set<String>
+    let progress: LessonProgress
     let settings: AppAccessibilitySettings
-    let startLesson: (STEMLesson) -> Void
+    let startLesson: (Lesson) -> Void
 
     var body: some View {
         NavigationStack {
@@ -13,18 +13,27 @@ struct LessonsHomeView: View {
                 VStack(alignment: .leading, spacing: 18) {
                     HeaderBand(xp: xp, level: level, settings: settings)
 
-                    Text("STEM Lessons")
+                    Text("Learning Paths")
                         .font(.title2.weight(.bold))
                         .padding(.horizontal, 18)
 
                     LazyVStack(spacing: 14) {
-                        ForEach(STEMLesson.lessons) { lesson in
-                            LessonCard(
-                                lesson: lesson,
-                                isCompleted: completedLessonIDs.contains(lesson.id),
-                                settings: settings,
-                                startLesson: { startLesson(lesson) }
-                            )
+                        ForEach(CurriculumData.subjects) { subject in
+                            NavigationLink {
+                                DifficultySelectionView(
+                                    subject: subject,
+                                    progress: progress,
+                                    settings: settings,
+                                    startLesson: startLesson
+                                )
+                            } label: {
+                                SubjectCard(
+                                    subject: subject,
+                                    completedCount: progress.completedCount(in: subject, difficulty: .beginner),
+                                    settings: settings
+                                )
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
                     .padding(.horizontal, 18)

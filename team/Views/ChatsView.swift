@@ -5,8 +5,8 @@ struct ChatsView: View {
 
     var body: some View {
         PlaceholderScreen(
-            title: "Chats",
-            iconName: "message.fill",
+            title: "Community",
+            iconName: "bubble.left.and.bubble.right.fill",
             message: "Coming Soon",
             settings: settings
         )

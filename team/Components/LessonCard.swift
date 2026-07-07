@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct LessonCard: View {
-    let lesson: STEMLesson
+    let lesson: Lesson
     let isCompleted: Bool
     let settings: AppAccessibilitySettings
     let startLesson: () -> Void
@@ -23,7 +23,7 @@ struct LessonCard: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 8) {
-                    Text(lesson.category)
+                    Text(lesson.difficulty.rawValue)
                         .font(.caption.weight(.bold))
                         .foregroundStyle(lessonColor)
                     if isCompleted {

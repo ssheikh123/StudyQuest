@@ -17,7 +17,7 @@ struct AnswerButton: View {
                     .foregroundStyle(isSelected ? color : .secondary)
             }
             .padding(14)
-            .background(isSelected ? color.opacity(0.16) : .white)
+            .background(isSelected ? color.opacity(0.16) : Color(.tertiarySystemGroupedBackground))
             .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius))
             .overlay(
                 RoundedRectangle(cornerRadius: AppTheme.cornerRadius)
