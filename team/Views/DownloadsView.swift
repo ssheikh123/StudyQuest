@@ -13,7 +13,7 @@ struct DownloadsView: View {
         ScrollView {
             LazyVStack(spacing: 14) {
                 if downloadedLessons.isEmpty {
-                    SparkTipCard(
+                    SystemTipCard(
                         message: "Downloaded lessons will appear here so you can find offline practice quickly.",
                         settings: settings
                     )

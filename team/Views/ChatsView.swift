@@ -9,7 +9,7 @@ struct ChatsView: View {
         NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 14) {
-                    SparkTipCard(
+                    SystemTipCard(
                         message: "Pick a study room, ask a question, or help another learner with a hint.",
                         settings: settings
                     )
@@ -67,7 +67,7 @@ private struct CommunityRoomView: View {
                     roomHeader
 
                     if posts.isEmpty {
-                        SparkTipCard(message: "Why not start the conversation?", settings: settings)
+                        SystemTipCard(message: "Why not start the conversation?", settings: settings)
                     } else {
                         ForEach(posts) { post in
                             CommunityPostCard(post: post, settings: settings) {

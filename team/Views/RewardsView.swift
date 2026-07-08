@@ -69,7 +69,7 @@ struct RewardsView: View {
 
     private var shopSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            SectionHeader(title: "Avatar Shop", subtitle: "Spend coins on Spark-approved gear")
+            SectionHeader(title: "Avatar Shop", subtitle: "Spend coins on new avatar gear")
 
             ForEach(ShopCategory.allCases) { category in
                 VStack(alignment: .leading, spacing: 10) {

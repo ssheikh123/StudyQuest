@@ -11,8 +11,6 @@ struct LaunchScreenView: View {
             launchBackground
 
             VStack(spacing: 26) {
-                SparkView(mood: .wave, size: 142, reduceMotion: settings.reduceMotion)
-
                 VStack(spacing: 8) {
                     Text("StudyQuest")
                         .font(.system(size: 42, weight: .bold, design: .rounded))

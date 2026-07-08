@@ -32,7 +32,7 @@ struct LessonListView: View {
                 .accessibilityLabel("Lesson filter")
 
                 if lessons.isEmpty {
-                    SparkTipCard(
+                    SystemTipCard(
                         message: "No downloaded lessons match this filter yet. Tap Download Lesson on any lesson to save it here.",
                         settings: settings
                     )

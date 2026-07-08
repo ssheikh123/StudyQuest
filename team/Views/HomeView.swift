@@ -17,7 +17,7 @@ struct HomeView: View {
 
     @State private var quote = HomeDashboardData.sample.quotes.randomElement() ?? "Small progress each day adds up."
     @State private var activeAlert: HomeDashboardAlert?
-    @State private var showsSparkTutor = false
+    @State private var showsLearningAssistant = false
 
     private let dashboardData = HomeDashboardData.sample
 
@@ -66,13 +66,13 @@ struct HomeView: View {
                         streak: streakData.currentStreak,
                         lastStudyDate: lastStudyDateText,
                         rewardProgress: min(Double(streakData.currentStreak % 7) / 7, 1),
-                        message: StreakManager.sparkMessage(for: streakData.currentStreak),
+                        message: StreakManager.message(for: streakData.currentStreak),
                         settings: settings
                     )
 
                     questsSection
 
-                    SparkTipCard(message: "Another quest complete? Spark is ready to celebrate with you.", settings: settings)
+                    SystemTipCard(message: "Complete another quest to keep your momentum going.", settings: settings)
 
                     recommendedSection
 
@@ -99,8 +99,8 @@ struct HomeView: View {
                 )
             }
             .animation(settings.reduceMotion ? nil : .easeInOut(duration: 0.25), value: progress.completedLessonIDs.count)
-            .sheet(isPresented: $showsSparkTutor) {
-                SparkTutorView(context: currentLessonContext, settings: settings)
+            .sheet(isPresented: $showsLearningAssistant) {
+                LearningAssistantView(context: currentLessonContext, settings: settings)
             }
         }
     }
@@ -163,8 +163,8 @@ struct HomeView: View {
             QuickAction(id: "browse", title: "Browse Lessons", iconName: "book.closed.fill", color: settings.accentColor) {
                 selectTab(.lessons)
             },
-            QuickAction(id: "ask-spark", title: "Ask Spark", iconName: "sparkles", color: .indigo) {
-                showsSparkTutor = true
+            QuickAction(id: "learning-assistant", title: "Learning Assistant", iconName: "graduationcap.fill", color: .indigo) {
+                showsLearningAssistant = true
             },
             QuickAction(id: "rewards", title: "Rewards", iconName: "gift.fill", color: .orange) {
                 selectTab(.rewards)
@@ -178,32 +178,8 @@ struct HomeView: View {
 
 private enum HomeDashboardAlert: Identifiable {
     case notifications
-    case aiTutor
 
-    var id: String {
-        switch self {
-        case .notifications:
-            return "notifications"
-        case .aiTutor:
-            return "aiTutor"
-        }
-    }
-
-    var title: String {
-        switch self {
-        case .notifications:
-            return "Notifications"
-        case .aiTutor:
-            return "Ask AI"
-        }
-    }
-
-    var message: String {
-        switch self {
-        case .notifications:
-            return "Notifications are coming soon."
-        case .aiTutor:
-            return "AI Tutor is coming soon."
-        }
-    }
+    var id: String { "notifications" }
+    var title: String { "Notifications" }
+    var message: String { "Notifications are coming soon." }
 }

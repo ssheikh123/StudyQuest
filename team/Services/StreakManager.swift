@@ -36,7 +36,7 @@ enum StreakManager {
         return reward(for: streak.currentStreak, awardedMilestones: &streak.awardedMilestones)
     }
 
-    static func sparkMessage(for streak: Int) -> String {
+    static func message(for streak: Int) -> String {
         switch streak {
         case 0:
             return "Let's start your learning journey!"

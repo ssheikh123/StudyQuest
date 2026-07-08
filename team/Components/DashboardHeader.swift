@@ -29,13 +29,17 @@ struct DashboardHeader: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             HStack(alignment: .top, spacing: 14) {
-                SparkBadge(size: 54)
+                AvatarPreview(color: avatarColor.color, accessory: avatarAccessory)
+                    .frame(width: 54, height: 54)
+                    .background(.white.opacity(0.15))
+                    .clipShape(Circle())
+                    .accessibilityHidden(true)
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text(greeting)
                         .font(.studyQuest(.title2, weight: .bold))
                         .foregroundStyle(.white)
-                    Text("Spark says: Let's learn something awesome today!")
+                    Text("Let's learn something awesome today!")
                         .font(.studyQuest(.subheadline, weight: .semibold))
                         .foregroundStyle(.white.opacity(0.86))
                 }
