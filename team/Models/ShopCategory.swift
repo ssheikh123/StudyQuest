@@ -4,6 +4,7 @@ enum ShopCategory: String, CaseIterable, Identifiable {
     case hats = "Hats"
     case glasses = "Glasses"
     case wings = "Wings"
+    case accessories = "Accessories"
     case backgrounds = "Backgrounds"
     case colors = "Colors"
 
@@ -17,6 +18,8 @@ enum ShopCategory: String, CaseIterable, Identifiable {
             return "eyeglasses"
         case .wings:
             return "bird.fill"
+        case .accessories:
+            return "sparkles"
         case .backgrounds:
             return "photo.fill"
         case .colors:

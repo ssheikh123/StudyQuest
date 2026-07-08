@@ -4,6 +4,8 @@ struct RewardsView: View {
     let level: Int
     let xp: Int
     let progress: LessonProgress
+    let questData: QuestData
+    let streakData: StreakData
     let settings: AppAccessibilitySettings
     @Binding var wallet: RewardsWallet
     @Binding var avatarColor: AvatarColor
@@ -22,6 +24,14 @@ struct RewardsView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     RewardsSummaryCard(level: level, xp: xp, coins: wallet.coins, settings: settings)
 
+                    RewardCard(
+                        title: "Player Progress",
+                        subtitle: "\(progress.completedLessonIDs.count) lessons complete • \(streakData.currentStreak) day streak",
+                        iconName: "chart.line.uptrend.xyaxis",
+                        color: settings.accentColor,
+                        settings: settings
+                    )
+
                     DailyRewardClaimCard(
                         canClaim: wallet.canClaimDailyReward(),
                         rewardCoins: RewardsCatalog.dailyRewardCoins,
@@ -29,8 +39,9 @@ struct RewardsView: View {
                         claim: claimDailyReward
                     )
 
-                    shopSection
+                    questsPreviewSection
                     badgesSection
+                    shopSection
                     futureRewardsSection
                 }
                 .padding(18)
@@ -43,6 +54,15 @@ struct RewardsView: View {
                     message: Text(message.body),
                     dismissButton: .default(Text("OK"))
                 )
+            }
+        }
+    }
+
+    private var questsPreviewSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            SectionHeader(title: "Daily Quests", subtitle: "Claim quest rewards from Home")
+            ForEach(questData.quests) { quest in
+                DailyQuestCard(quest: quest, settings: settings) { }
             }
         }
     }
@@ -77,11 +97,21 @@ struct RewardsView: View {
     }
 
     private var badgesSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            SectionHeader(title: "Badges", subtitle: "Milestones from your learning adventure")
+        let badges = RewardsCatalog.badges(progress: progress, xp: xp, level: level, streak: streakData)
+        let earned = badges.filter(\.isUnlocked)
+        let locked = badges.filter { !$0.isUnlocked }
 
+        return VStack(alignment: .leading, spacing: 14) {
+            SectionHeader(title: "Earned Badges", subtitle: "Milestones you've unlocked")
             LazyVGrid(columns: badgeColumns, spacing: 12) {
-                ForEach(RewardsCatalog.badges(progress: progress, level: level)) { badge in
+                ForEach(earned) { badge in
+                    RewardBadgeCard(badge: badge, settings: settings)
+                }
+            }
+
+            SectionHeader(title: "Locked Badges", subtitle: "Keep learning to unlock these")
+            LazyVGrid(columns: badgeColumns, spacing: 12) {
+                ForEach(locked) { badge in
                     RewardBadgeCard(badge: badge, settings: settings)
                 }
             }
@@ -90,7 +120,7 @@ struct RewardsView: View {
 
     private var futureRewardsSection: some View {
         VStack(alignment: .leading, spacing: 14) {
-            SectionHeader(title: "Coming Soon", subtitle: "Future rewards are not redeemable yet")
+            SectionHeader(title: "Coming Soon", subtitle: "Future versions of StudyQuest may allow points to be redeemed for real rewards.")
 
             ForEach(RewardsCatalog.futureRewards) { reward in
                 FutureRewardCard(reward: reward, settings: settings)

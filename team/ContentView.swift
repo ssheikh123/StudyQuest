@@ -55,6 +55,7 @@ struct ContentView: View {
                 transaction.disablesAnimations = true
             }
         }
+        .onAppear(perform: prepareDailyProgression)
         .sheet(item: $activeLesson) { lesson in
             LessonDetailView(
                 lesson: lesson,
@@ -82,7 +83,10 @@ struct ContentView: View {
                 coins: appState.rewards.wallet.coins,
                 avatarColor: appState.profile.avatarColor,
                 avatarAccessory: appState.profile.avatarAccessory,
+                questData: appState.rewards.quests,
+                streakData: appState.rewards.streak,
                 settings: settings,
+                claimQuest: claimQuest,
                 startLesson: startLesson,
                 selectTab: { tab in selectedTab = tab }
             )
@@ -103,6 +107,8 @@ struct ContentView: View {
                 level: level,
                 xp: appState.progress.xp,
                 progress: appState.progress.lessonProgress,
+                questData: appState.rewards.quests,
+                streakData: appState.rewards.streak,
                 settings: settings,
                 wallet: rewardsWalletBinding,
                 avatarColor: avatarColorBinding,
@@ -120,10 +126,12 @@ struct ContentView: View {
                 level: level,
                 progress: appState.progress.lessonProgress,
                 settings: settings,
+                wallet: rewardsWalletBinding,
                 avatarColor: avatarColorBinding,
                 avatarAccessory: avatarAccessoryBinding,
                 learningFocusSubjectID: learningFocusBinding,
-                accessibilitySettings: accessibilitySettingsBinding
+                accessibilitySettings: accessibilitySettingsBinding,
+                resetProfile: resetProfile
             )
             .tabItem { Label(AppTab.profile.title, systemImage: AppTab.profile.iconName) }
             .tag(AppTab.profile)
@@ -182,6 +190,30 @@ struct ContentView: View {
         )
     }
 
+    private func prepareDailyProgression() {
+        QuestManager.refreshDailyQuests(in: &appState.rewards.quests)
+        appState.rewards.streak = StreakManager.normalized(appState.rewards.streak)
+        saveAppState()
+    }
+
+    private func claimQuest(_ quest: DailyQuest) {
+        var questData = appState.rewards.quests
+        var xp = appState.progress.xp
+        var wallet = appState.rewards.wallet
+
+        if QuestManager.claim(
+            quest,
+            data: &questData,
+            xp: &xp,
+            wallet: &wallet
+        ) {
+            appState.rewards.quests = questData
+            appState.progress.xp = xp
+            appState.rewards.wallet = wallet
+            saveAppState()
+        }
+    }
+
     private func startApp() {
         withAnimation(settings.reduceMotion ? nil : .easeInOut(duration: 0.35)) {
             hasFinishedLaunch = true
@@ -198,6 +230,7 @@ struct ContentView: View {
 
     private func completeOnboarding(profile: UserProfile) {
         appState.profile = profile
+        AvatarManager.grantStarterEquipment(profile: profile, wallet: &appState.rewards.wallet)
         selectedTab = .home
         saveAppState()
     }
@@ -218,6 +251,7 @@ struct ContentView: View {
             xp: &xp,
             learningFocusSubjectID: appState.profile.learningFocusSubjectID
         ) {
+            let xpEarned = xp - appState.progress.xp
             appState.progress.lessonProgress = progress
             appState.progress.xp = xp
             RewardsService.awardLessonCompletionCoins(
@@ -225,9 +259,32 @@ struct ContentView: View {
                 wallet: &appState.rewards.wallet,
                 learningFocusSubjectID: appState.profile.learningFocusSubjectID
             )
-            appState.rewards.dailyStreak = max(1, appState.rewards.dailyStreak)
+            QuestManager.recordLessonCompletion(
+                lesson,
+                xpEarned: xpEarned,
+                questionsAnswered: lesson.quizQuestions.count,
+                level: Leveling.level(for: xp),
+                data: &appState.rewards.quests
+            )
+            if let streakReward = StreakManager.recordLessonCompletion(streak: &appState.rewards.streak) {
+                appState.rewards.wallet.coins += streakReward.coins
+                if let badgeID = streakReward.badgeID {
+                    appState.rewards.unlockedBadgeIDs.insert(badgeID)
+                }
+                if let cosmeticItemID = streakReward.cosmeticItemID {
+                    appState.rewards.wallet.purchasedShopItemIDs.insert(cosmeticItemID)
+                }
+            }
+            appState.rewards.dailyStreak = appState.rewards.streak.currentStreak
             saveAppState()
         }
+    }
+
+    private func resetProfile() {
+        activeLesson = nil
+        selectedTab = .home
+        appState = ProfileManager.resetLocalProfile()
+        hasFinishedLaunch = true
     }
 
     private func saveAppState() {

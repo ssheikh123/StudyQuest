@@ -6,6 +6,25 @@ struct AvatarStudioView: View {
     let settings: AppAccessibilitySettings
     @Binding var selectedColor: AvatarColor
     @Binding var selectedAccessory: AvatarAccessory
+    @Binding var wallet: RewardsWallet
+
+    @State private var message: AvatarStudioMessage?
+
+    private let columns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12)
+    ]
+
+    private var profile: UserProfile {
+        var profile = UserProfile()
+        profile.avatarColor = selectedColor
+        profile.avatarAccessory = selectedAccessory
+        return profile
+    }
+
+    private var cosmetics: [AvatarCosmetic] {
+        AvatarManager.cosmetics(profile: profile, wallet: wallet)
+    }
 
     var body: some View {
         ScrollView {
@@ -23,36 +42,88 @@ struct AvatarStudioView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(22)
-                .background(settings.cardBackground)
-                .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius))
+                .studyQuestCard(settings: settings, radius: AppTheme.cornerRadius)
 
-                CustomizerSection(title: "Avatar Color") {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 72), spacing: 12)], spacing: 12) {
-                        ForEach(AvatarColor.allCases) { colorChoice in
-                            ColorChoiceButton(
-                                colorChoice: colorChoice,
-                                isSelected: selectedColor == colorChoice,
-                                action: { selectedColor = colorChoice }
-                            )
-                        }
-                    }
-                }
-
-                CustomizerSection(title: "Accessory") {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 12)], spacing: 12) {
-                        ForEach(AvatarAccessory.allCases) { accessory in
-                            AccessoryChoiceButton(
-                                accessory: accessory,
-                                isSelected: selectedAccessory == accessory,
-                                action: { selectedAccessory = accessory }
-                            )
-                        }
-                    }
-                }
+                cosmeticSection(title: "Equipped", items: cosmetics.filter(\.equipped))
+                cosmeticSection(title: "Unlocked", items: cosmetics.filter { $0.unlocked && !$0.equipped })
+                cosmeticSection(title: "Locked", items: cosmetics.filter { !$0.unlocked })
             }
             .padding(18)
         }
         .background(settings.alternateScreenBackground)
         .navigationTitle("Avatar Studio")
+        .alert(item: $message) { message in
+            Alert(
+                title: Text(message.title),
+                message: Text(message.body),
+                dismissButton: .default(Text("OK"))
+            )
+        }
     }
+
+    private func cosmeticSection(title: String, items: [AvatarCosmetic]) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(title: title)
+
+            if items.isEmpty {
+                Text("No items here yet.")
+                    .font(.studyQuest(.subheadline, weight: .semibold))
+                    .foregroundStyle(settings.secondaryText)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(16)
+                    .studyQuestCard(settings: settings, radius: AppTheme.fieldRadius)
+            } else {
+                LazyVGrid(columns: columns, spacing: 12) {
+                    ForEach(items) { cosmetic in
+                        AvatarCosmeticCard(cosmetic: cosmetic, settings: settings) {
+                            handle(cosmetic)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func handle(_ cosmetic: AvatarCosmetic) {
+        guard cosmetic.unlocked else {
+            purchase(cosmetic)
+            return
+        }
+
+        equip(cosmetic)
+    }
+
+    private func purchase(_ cosmetic: AvatarCosmetic) {
+        guard let item = AvatarManager.item(for: cosmetic) else { return }
+
+        switch RewardsService.purchase(item, wallet: &wallet) {
+        case .purchased:
+            equip(cosmetic)
+            message = AvatarStudioMessage(title: "Unlocked", body: "\(cosmetic.name) is now available.")
+        case .alreadyOwned:
+            equip(cosmetic)
+        case .insufficientCoins:
+            message = AvatarStudioMessage(title: "Not Enough Coins", body: "Earn more coins from lessons or daily rewards to unlock this item.")
+        }
+    }
+
+    private func equip(_ cosmetic: AvatarCosmetic) {
+        if let color = cosmetic.avatarColor {
+            selectedColor = color
+            return
+        }
+
+        if let accessory = cosmetic.avatarAccessory {
+            selectedAccessory = accessory
+            return
+        }
+
+        message = AvatarStudioMessage(title: "Purchased Item", body: "This cosmetic is unlocked, but avatar display support is coming soon.")
+    }
+}
+
+private struct AvatarStudioMessage: Identifiable {
+    let id = UUID()
+    let title: String
+    let body: String
 }

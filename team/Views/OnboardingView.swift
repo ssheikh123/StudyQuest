@@ -46,7 +46,7 @@ struct OnboardingView: View {
 
     private var welcomeStep: some View {
         onboardingCard {
-            SparkBadge(size: 88)
+            SparkView(mood: .wave, size: 132, reduceMotion: settings.reduceMotion)
             Text("Welcome to StudyQuest")
                 .font(.studyQuest(.largeTitle, weight: .bold))
                 .foregroundStyle(settings.primaryText)
@@ -64,7 +64,7 @@ struct OnboardingView: View {
 
     private var nameStep: some View {
         onboardingCard {
-            SparkBadge(size: 72)
+            SparkView(mood: .smile, size: 118, reduceMotion: settings.reduceMotion)
             Text("What should Spark call you?")
                 .font(.studyQuest(.title, weight: .bold))
                 .foregroundStyle(settings.primaryText)
@@ -86,6 +86,8 @@ struct OnboardingView: View {
 
     private var focusStep: some View {
         onboardingCard(alignment: .leading) {
+            SparkView(mood: .point, size: 104, reduceMotion: settings.reduceMotion)
+                .frame(maxWidth: .infinity)
             Text("What would you like to focus on first?")
                 .font(.studyQuest(.title, weight: .bold))
                 .foregroundStyle(settings.primaryText)
@@ -112,6 +114,8 @@ struct OnboardingView: View {
 
     private var avatarStep: some View {
         onboardingCard(alignment: .leading) {
+            SparkView(mood: .happy, size: 104, reduceMotion: settings.reduceMotion)
+                .frame(maxWidth: .infinity)
             Text("Choose your avatar")
                 .font(.studyQuest(.title, weight: .bold))
                 .foregroundStyle(settings.primaryText)
@@ -151,7 +155,7 @@ struct OnboardingView: View {
 
     private var meetSparkStep: some View {
         onboardingCard {
-            SparkBadge(size: 88)
+            SparkView(mood: .celebrate, size: 132, reduceMotion: settings.reduceMotion)
             Text("Awesome! Everything is ready.")
                 .font(.studyQuest(.title, weight: .bold))
                 .foregroundStyle(settings.primaryText)

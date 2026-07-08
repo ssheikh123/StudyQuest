@@ -4,6 +4,19 @@ struct LessonProgress: Codable, Equatable {
     var completedLessonIDs = Set<String>()
     var currentLessonID: String?
 
+    enum CodingKeys: String, CodingKey {
+        case completedLessonIDs
+        case currentLessonID
+    }
+
+    init() { }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        completedLessonIDs = try container.decodeIfPresent(Set<String>.self, forKey: .completedLessonIDs) ?? []
+        currentLessonID = try container.decodeIfPresent(String.self, forKey: .currentLessonID)
+    }
+
     func isCompleted(_ lesson: Lesson) -> Bool {
         completedLessonIDs.contains(lesson.id)
     }

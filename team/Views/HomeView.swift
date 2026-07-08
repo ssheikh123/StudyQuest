@@ -8,7 +8,10 @@ struct HomeView: View {
     let coins: Int
     let avatarColor: AvatarColor
     let avatarAccessory: AvatarAccessory
+    let questData: QuestData
+    let streakData: StreakData
     let settings: AppAccessibilitySettings
+    let claimQuest: (DailyQuest) -> Void
     let startLesson: (Lesson) -> Void
     let selectTab: (AppTab) -> Void
 
@@ -58,39 +61,17 @@ struct HomeView: View {
                         )
                     }
 
-                    ViewThatFits(in: .horizontal) {
-                        HStack(alignment: .top, spacing: 12) {
-                            StreakCard(
-                                streak: dashboardData.currentStreak,
-                                lastStudyDate: dashboardData.lastStudyDate,
-                                rewardProgress: dashboardData.streakRewardProgress,
-                                message: dashboardData.streakMessage,
-                                settings: settings
-                            )
+                    StreakCard(
+                        streak: streakData.currentStreak,
+                        lastStudyDate: lastStudyDateText,
+                        rewardProgress: min(Double(streakData.currentStreak % 7) / 7, 1),
+                        message: StreakManager.sparkMessage(for: streakData.currentStreak),
+                        settings: settings
+                    )
 
-                            DailyChallengeCard(
-                                challenge: dashboardData.dailyChallenge,
-                                settings: settings
-                            )
-                        }
+                    questsSection
 
-                        VStack(spacing: 12) {
-                            StreakCard(
-                                streak: dashboardData.currentStreak,
-                                lastStudyDate: dashboardData.lastStudyDate,
-                                rewardProgress: dashboardData.streakRewardProgress,
-                                message: dashboardData.streakMessage,
-                                settings: settings
-                            )
-
-                            DailyChallengeCard(
-                                challenge: dashboardData.dailyChallenge,
-                                settings: settings
-                            )
-                        }
-                    }
-
-                    SparkTipCard(message: "You've got this. One lesson today keeps your adventure moving.", settings: settings)
+                    SparkTipCard(message: "Another quest complete? Spark is ready to celebrate with you.", settings: settings)
 
                     recommendedSection
 
@@ -117,6 +98,23 @@ struct HomeView: View {
                 )
             }
             .animation(settings.reduceMotion ? nil : .easeInOut(duration: 0.25), value: progress.completedLessonIDs.count)
+        }
+    }
+
+    private var lastStudyDateText: String {
+        guard let date = streakData.lastLessonCompletionDate else { return "Not started" }
+        return Calendar.current.isDateInToday(date) ? "Today" : date.formatted(date: .abbreviated, time: .omitted)
+    }
+
+    private var questsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionHeader(title: "Today's Quests", subtitle: "Complete goals and claim rewards")
+
+            ForEach(questData.quests) { quest in
+                DailyQuestCard(quest: quest, settings: settings) {
+                    claimQuest(quest)
+                }
+            }
         }
     }
 

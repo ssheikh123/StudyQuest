@@ -5,10 +5,14 @@ struct ProfileView: View {
     let level: Int
     let progress: LessonProgress
     let settings: AppAccessibilitySettings
+    @Binding var wallet: RewardsWallet
     @Binding var avatarColor: AvatarColor
     @Binding var avatarAccessory: AvatarAccessory
     @Binding var learningFocusSubjectID: String
     @Binding var accessibilitySettings: AppAccessibilitySettings
+    let resetProfile: () -> Void
+
+    @State private var showResetConfirmation = false
 
     var body: some View {
         NavigationStack {
@@ -17,11 +21,18 @@ struct ProfileView: View {
                     profilePlaceholder
                     learningFocusSection
                     currentTools
+                    accountSection
                 }
                 .padding(18)
             }
             .background(settings.screenBackground)
             .navigationTitle("Profile")
+            .alert("Delete your StudyQuest profile?", isPresented: $showResetConfirmation) {
+                Button("Cancel", role: .cancel) { }
+                Button("Delete Profile", role: .destructive, action: resetProfile)
+            } message: {
+                Text("This will erase your name, XP, coins, progress, lessons, rewards, avatar, purchased cosmetics, accessibility settings, theme, and daily streak. This action cannot be undone.")
+            }
         }
     }
 
@@ -76,7 +87,8 @@ struct ProfileView: View {
                     level: level,
                     settings: settings,
                     selectedColor: $avatarColor,
-                    selectedAccessory: $avatarAccessory
+                    selectedAccessory: $avatarAccessory,
+                    wallet: $wallet
                 )
             } label: {
                 ProfileToolRow(title: "Avatar Studio", subtitle: "Customize your explorer", iconName: "person.crop.circle.fill", settings: settings)
@@ -100,6 +112,27 @@ struct ProfileView: View {
             } label: {
                 ProfileToolRow(title: "Settings", subtitle: "Accessibility and app preferences", iconName: "gearshape.fill", settings: settings)
             }
+        }
+        .padding(18)
+        .background(settings.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius))
+    }
+
+    private var accountSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Account")
+                .font(.title3.weight(.bold))
+
+            Button(role: .destructive) {
+                showResetConfirmation = true
+            } label: {
+                Label("Delete Profile", systemImage: "trash.fill")
+                    .font(.headline.weight(.bold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.red)
         }
         .padding(18)
         .background(settings.cardBackground)
