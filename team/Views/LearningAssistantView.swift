@@ -1,11 +1,11 @@
 import AVFoundation
 import SwiftUI
 
-struct SparkTutorView: View {
+struct LearningAssistantView: View {
     let context: LessonContext?
     let settings: AppAccessibilitySettings
 
-    @State private var conversation = SparkConversation()
+    @State private var conversation = LearningConversation()
     @State private var inputText = ""
     @State private var isSending = false
     @State private var speechSynthesizer = AVSpeechSynthesizer()
@@ -19,16 +19,22 @@ struct SparkTutorView: View {
                 inputBar
             }
             .background(settings.screenBackground)
-            .navigationTitle("Ask Spark")
+            .navigationTitle("Learning Assistant")
             .navigationBarTitleDisplayMode(.inline)
         }
     }
 
     private var header: some View {
         HStack(spacing: 14) {
-            SparkView(state: .thinking, size: 82, reduceMotion: settings.reduceMotion)
+            Image(systemName: "graduationcap.fill")
+                .font(.system(size: 32, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 72, height: 72)
+                .background(settings.accentColor.gradient)
+                .clipShape(RoundedRectangle(cornerRadius: 22))
+
             VStack(alignment: .leading, spacing: 4) {
-                Text("Spark Tutor")
+                Text("Learning Assistant")
                     .font(.studyQuest(.title3, weight: .bold))
                     .foregroundStyle(settings.primaryText)
                 Text(contextText)
@@ -48,14 +54,14 @@ struct SparkTutorView: View {
                 LazyVStack(spacing: 12) {
                     ForEach(conversation.messages) { message in
                         HStack(spacing: 8) {
-                            SparkMessageBubble(message: message, settings: settings)
-                            if settings.textToSpeech && message.role == .spark {
+                            LearningMessageBubble(message: message, settings: settings)
+                            if settings.textToSpeech && message.role == .assistant {
                                 Button {
                                     speak(message.text)
                                 } label: {
                                     Image(systemName: "speaker.wave.2.fill")
                                 }
-                                .accessibilityLabel("Speak Spark response")
+                                .accessibilityLabel("Speak assistant response")
                             }
                         }
                         .id(message.id)
@@ -77,7 +83,7 @@ struct SparkTutorView: View {
     private var suggestedPrompts: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                ForEach(SparkPromptBuilder.suggestedPrompts, id: \.self) { prompt in
+                ForEach(LearningPromptBuilder.suggestedPrompts, id: \.self) { prompt in
                     Button(prompt) {
                         inputText = prompt
                         send()
@@ -96,7 +102,7 @@ struct SparkTutorView: View {
 
     private var inputBar: some View {
         HStack(spacing: 10) {
-            TextField("Ask Spark for a hint", text: $inputText, axis: .vertical)
+            TextField("Ask for a hint", text: $inputText, axis: .vertical)
                 .font(.studyQuest(.body))
                 .textFieldStyle(.roundedBorder)
                 .lineLimit(1...3)
@@ -121,12 +127,13 @@ struct SparkTutorView: View {
 
     private func send() {
         let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
         inputText = ""
-        conversation.messages.append(SparkMessage(role: .student, text: text))
+        conversation.messages.append(LearningMessage(role: .student, text: text))
         isSending = true
         Task {
-            let response = await SparkTutorManager.response(to: text, conversation: conversation, context: context)
-            conversation.messages.append(SparkMessage(role: .spark, text: response))
+            let response = await LearningAssistantManager.response(to: text, conversation: conversation, context: context)
+            conversation.messages.append(LearningMessage(role: .assistant, text: response))
             isSending = false
         }
     }

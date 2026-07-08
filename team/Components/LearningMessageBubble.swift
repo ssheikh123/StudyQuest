@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct SparkMessageBubble: View {
-    let message: SparkMessage
+struct LearningMessageBubble: View {
+    let message: LearningMessage
     let settings: AppAccessibilitySettings
 
     private var isStudent: Bool {
@@ -11,8 +11,15 @@ struct SparkMessageBubble: View {
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
             if isStudent { Spacer(minLength: 36) }
+
             if !isStudent {
-                SparkView(state: .idle, size: 42, reduceMotion: true)
+                Image(systemName: "graduationcap.fill")
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 38, height: 38)
+                    .background(settings.accentColor.gradient)
+                    .clipShape(Circle())
+                    .accessibilityHidden(true)
             }
 
             Text(message.text)
@@ -21,7 +28,7 @@ struct SparkMessageBubble: View {
                 .padding(12)
                 .background(isStudent ? settings.accentColor : settings.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: AppTheme.fieldRadius))
-                .accessibilityLabel(isStudent ? "You said: \(message.text)" : "Spark said: \(message.text)")
+                .accessibilityLabel(isStudent ? "You said: \(message.text)" : "Assistant said: \(message.text)")
 
             if !isStudent { Spacer(minLength: 36) }
         }

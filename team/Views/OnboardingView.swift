@@ -24,7 +24,7 @@ struct OnboardingView: View {
                     nameStep.tag(1)
                     focusStep.tag(2)
                     avatarStep.tag(3)
-                    meetSparkStep.tag(4)
+                    readyStep.tag(4)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .animation(settings.reduceMotion ? nil : .easeInOut(duration: 0.25), value: step)
@@ -46,16 +46,19 @@ struct OnboardingView: View {
 
     private var welcomeStep: some View {
         onboardingCard {
-            SparkView(mood: .wave, size: 132, reduceMotion: settings.reduceMotion)
+            AvatarPreview(color: profile.avatarColor.color, accessory: profile.avatarAccessory)
+                .frame(width: 132, height: 132)
+                .background(settings.accentColor.opacity(0.12))
+                .clipShape(Circle())
             Text("Welcome to StudyQuest")
                 .font(.studyQuest(.largeTitle, weight: .bold))
                 .foregroundStyle(settings.primaryText)
                 .multilineTextAlignment(.center)
-            Text("A playful learning adventure where lessons earn XP, coins, badges, and avatar rewards.")
+            Text("Learn new skills, earn rewards, and level up through fun educational challenges.")
                 .font(.studyQuest(.headline, weight: .semibold))
                 .foregroundStyle(settings.secondaryText)
                 .multilineTextAlignment(.center)
-            SparkTipCard(message: "Hi! I'm Spark! Let's get your learning adventure started.", settings: settings)
+            SystemTipCard(message: "Build your streak, complete lessons, and make steady progress every day.", settings: settings)
             PrimaryButton(title: "Get Started", iconName: "arrow.right.circle.fill", color: settings.accentColor) {
                 step = 1
             }
@@ -64,8 +67,11 @@ struct OnboardingView: View {
 
     private var nameStep: some View {
         onboardingCard {
-            SparkView(mood: .smile, size: 118, reduceMotion: settings.reduceMotion)
-            Text("What should Spark call you?")
+            AvatarPreview(color: profile.avatarColor.color, accessory: profile.avatarAccessory)
+                .frame(width: 118, height: 118)
+                .background(settings.accentColor.opacity(0.12))
+                .clipShape(Circle())
+            Text("What should we call you?")
                 .font(.studyQuest(.title, weight: .bold))
                 .foregroundStyle(settings.primaryText)
                 .multilineTextAlignment(.center)
@@ -86,8 +92,6 @@ struct OnboardingView: View {
 
     private var focusStep: some View {
         onboardingCard(alignment: .leading) {
-            SparkView(mood: .point, size: 104, reduceMotion: settings.reduceMotion)
-                .frame(maxWidth: .infinity)
             Text("What would you like to focus on first?")
                 .font(.studyQuest(.title, weight: .bold))
                 .foregroundStyle(settings.primaryText)
@@ -114,8 +118,6 @@ struct OnboardingView: View {
 
     private var avatarStep: some View {
         onboardingCard(alignment: .leading) {
-            SparkView(mood: .happy, size: 104, reduceMotion: settings.reduceMotion)
-                .frame(maxWidth: .infinity)
             Text("Choose your avatar")
                 .font(.studyQuest(.title, weight: .bold))
                 .foregroundStyle(settings.primaryText)
@@ -153,10 +155,13 @@ struct OnboardingView: View {
         }
     }
 
-    private var meetSparkStep: some View {
+    private var readyStep: some View {
         onboardingCard {
-            SparkView(mood: .celebrate, size: 132, reduceMotion: settings.reduceMotion)
-            Text("Awesome! Everything is ready.")
+            AvatarPreview(color: profile.avatarColor.color, accessory: profile.avatarAccessory)
+                .frame(width: 132, height: 132)
+                .background(settings.accentColor.opacity(0.12))
+                .clipShape(Circle())
+            Text("You're ready to begin.")
                 .font(.studyQuest(.title, weight: .bold))
                 .foregroundStyle(settings.primaryText)
                 .multilineTextAlignment(.center)
@@ -167,7 +172,7 @@ struct OnboardingView: View {
             }
             .font(.studyQuest(.headline, weight: .bold))
             .foregroundStyle(settings.primaryText)
-            Text("I'll always be here if you need help.")
+            Text("Your progress, rewards, and avatar are saved locally on this device.")
                 .font(.studyQuest(.headline, weight: .semibold))
                 .foregroundStyle(settings.secondaryText)
                 .multilineTextAlignment(.center)

@@ -1,16 +1,16 @@
 import Foundation
 
-protocol SparkTutorProviding {
-    func response(to message: String, context: LessonContext?, conversation: SparkConversation) async -> String
+protocol LearningAssistantProviding {
+    func response(to message: String, context: LessonContext?, conversation: LearningConversation) async -> String
 }
 
-struct LocalSparkTutorProvider: SparkTutorProviding {
-    func response(to message: String, context: LessonContext?, conversation: SparkConversation) async -> String {
+struct LocalLearningAssistantProvider: LearningAssistantProviding {
+    func response(to message: String, context: LessonContext?, conversation: LearningConversation) async -> String {
         let normalized = message.lowercased()
         let lessonPhrase = context.map { " in \($0.lessonTitle)" } ?? ""
 
         if asksForAnswer(normalized) {
-            return "I'll help you get there, but I won't give away the answer. Let's start with the first step: what clue in the question seems most important?"
+            return "I'll help you get there, but I won't give away the answer. Start with the first step: what clue in the question seems most important?"
         }
 
         if normalized.contains("hint") || normalized.contains("first step") {
@@ -22,14 +22,14 @@ struct LocalSparkTutorProvider: SparkTutorProviding {
         }
 
         if normalized.contains("quiz") || normalized.contains("practice") || normalized.contains("problem") {
-            return "Let's practice! Try this: explain the main idea in your own words, then choose one detail that supports it. No XP here, just practice treasure."
+            return "Let's practice. Try this: explain the main idea in your own words, then choose one detail that supports it. No XP here, just practice."
         }
 
         if normalized.contains("variable") || context?.lessonTitle.lowercased().contains("variable") == true {
             return "A variable is like a labeled box. We may not know what's inside yet, but clues in the problem help us figure it out. What operation is happening to the variable?"
         }
 
-        return "Let's soar through this together. Tell me what part feels tricky, and I'll help with a hint or a simpler example."
+        return "Tell me what part feels tricky, and I'll help with a hint or a simpler example."
     }
 
     private func asksForAnswer(_ text: String) -> Bool {
@@ -56,12 +56,12 @@ struct LocalSparkTutorProvider: SparkTutorProviding {
     }
 }
 
-enum SparkTutorManager {
-    static func response(to text: String, conversation: SparkConversation, context: LessonContext?) async -> String {
-        await response(to: text, conversation: conversation, context: context, provider: LocalSparkTutorProvider())
+enum LearningAssistantManager {
+    static func response(to text: String, conversation: LearningConversation, context: LessonContext?) async -> String {
+        await response(to: text, conversation: conversation, context: context, provider: LocalLearningAssistantProvider())
     }
 
-    static func response(to text: String, conversation: SparkConversation, context: LessonContext?, provider: SparkTutorProviding) async -> String {
+    static func response(to text: String, conversation: LearningConversation, context: LessonContext?, provider: LearningAssistantProviding) async -> String {
         await provider.response(to: text, context: context, conversation: conversation)
     }
 
