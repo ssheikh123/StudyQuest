@@ -11,15 +11,7 @@ struct LaunchScreenView: View {
             launchBackground
 
             VStack(spacing: 26) {
-                ZStack {
-                    Circle()
-                        .fill(.white.opacity(settings.darkMode ? 0.12 : 0.22))
-                        .frame(width: 132, height: 132)
-
-                    Image(systemName: "atom")
-                        .font(.system(size: 66, weight: .bold))
-                        .foregroundStyle(.white)
-                }
+                SparkView(mood: .wave, size: 142, reduceMotion: settings.reduceMotion)
 
                 VStack(spacing: 8) {
                     Text("StudyQuest")

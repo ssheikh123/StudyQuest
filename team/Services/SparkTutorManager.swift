@@ -57,13 +57,12 @@ struct LocalSparkTutorProvider: SparkTutorProviding {
 }
 
 enum SparkTutorManager {
-    static func send(_ text: String, conversation: inout SparkConversation, context: LessonContext?, provider: SparkTutorProviding = LocalSparkTutorProvider()) async {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
+    static func response(to text: String, conversation: SparkConversation, context: LessonContext?) async -> String {
+        await response(to: text, conversation: conversation, context: context, provider: LocalSparkTutorProvider())
+    }
 
-        conversation.messages.append(SparkMessage(role: .student, text: trimmed))
-        let response = await provider.response(to: trimmed, context: context, conversation: conversation)
-        conversation.messages.append(SparkMessage(role: .spark, text: response))
+    static func response(to text: String, conversation: SparkConversation, context: LessonContext?, provider: SparkTutorProviding) async -> String {
+        await provider.response(to: text, context: context, conversation: conversation)
     }
 
     static func hint(for question: QuizQuestion, hintIndex: Int, context: LessonContext?) -> String {

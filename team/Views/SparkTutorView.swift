@@ -120,11 +120,13 @@ struct SparkTutorView: View {
     }
 
     private func send() {
-        let text = inputText
+        let text = inputText.trimmingCharacters(in: .whitespacesAndNewlines)
         inputText = ""
+        conversation.messages.append(SparkMessage(role: .student, text: text))
         isSending = true
         Task {
-            await SparkTutorManager.send(text, conversation: &conversation, context: context)
+            let response = await SparkTutorManager.response(to: text, conversation: conversation, context: context)
+            conversation.messages.append(SparkMessage(role: .spark, text: response))
             isSending = false
         }
     }

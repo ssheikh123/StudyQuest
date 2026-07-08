@@ -17,6 +17,7 @@ struct HomeView: View {
 
     @State private var quote = HomeDashboardData.sample.quotes.randomElement() ?? "Small progress each day adds up."
     @State private var activeAlert: HomeDashboardAlert?
+    @State private var showsSparkTutor = false
 
     private let dashboardData = HomeDashboardData.sample
 
@@ -98,7 +99,15 @@ struct HomeView: View {
                 )
             }
             .animation(settings.reduceMotion ? nil : .easeInOut(duration: 0.25), value: progress.completedLessonIDs.count)
+            .sheet(isPresented: $showsSparkTutor) {
+                SparkTutorView(context: currentLessonContext, settings: settings)
+            }
         }
+    }
+
+    private var currentLessonContext: LessonContext? {
+        guard let currentLesson else { return nil }
+        return LessonContext(lesson: currentLesson)
     }
 
     private var lastStudyDateText: String {
@@ -154,8 +163,8 @@ struct HomeView: View {
             QuickAction(id: "browse", title: "Browse Lessons", iconName: "book.closed.fill", color: settings.accentColor) {
                 selectTab(.lessons)
             },
-            QuickAction(id: "ask-ai", title: "Ask AI", iconName: "sparkles", color: .indigo) {
-                activeAlert = .aiTutor
+            QuickAction(id: "ask-spark", title: "Ask Spark", iconName: "sparkles", color: .indigo) {
+                showsSparkTutor = true
             },
             QuickAction(id: "rewards", title: "Rewards", iconName: "gift.fill", color: .orange) {
                 selectTab(.rewards)

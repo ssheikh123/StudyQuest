@@ -1,6 +1,6 @@
 import Foundation
 
-struct LessonContext: Codable, Equatable {
+struct LessonContext: Equatable {
     let subject: String
     let lessonTitle: String
     let difficulty: LessonDifficulty

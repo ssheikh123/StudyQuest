@@ -14,6 +14,9 @@ struct LessonDetailView: View {
     @State private var feedbackText = "Answer every question to finish the lesson."
     @State private var didCompleteLesson = false
     @State private var speechSynthesizer = AVSpeechSynthesizer()
+    @State private var showsSparkTutor = false
+    @State private var hintIndexes: [String: Int] = [:]
+    @State private var hintTextByQuestionID: [String: String] = [:]
 
     private var lessonColor: Color {
         lesson.displayColor(colorblindMode: settings.colorblindMode)
@@ -32,6 +35,9 @@ struct LessonDetailView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     lessonHero
+
+                    SparkTipCard(message: "Today we'll learn about \(lesson.title). You've got this!", settings: settings)
+                        .padding(.horizontal, 20)
 
                     LessonContentSection(
                         title: "Lesson Introduction",
@@ -72,6 +78,13 @@ struct LessonDetailView: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close", action: close)
                 }
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showsSparkTutor = true
+                    } label: {
+                        Label("Ask Spark", systemImage: "sparkles")
+                    }
+                }
                 if settings.textToSpeech {
                     ToolbarItem(placement: .primaryAction) {
                         Button(action: speakLesson) {
@@ -85,6 +98,9 @@ struct LessonDetailView: View {
                     }
                     .disabled(!hasAnsweredEveryQuestion && !canShowCompletion)
                 }
+            }
+            .sheet(isPresented: $showsSparkTutor) {
+                SparkTutorView(context: LessonContext(lesson: lesson), settings: settings)
             }
         }
     }
@@ -126,6 +142,19 @@ struct LessonDetailView: View {
                     }
                 )
                 .padding(.horizontal, 20)
+
+                if let hint = hintTextByQuestionID[question.id] {
+                    SparkTipCard(message: hint, settings: settings)
+                        .padding(.horizontal, 20)
+                }
+
+                Button {
+                    showHint(for: question)
+                } label: {
+                    Label("Ask Spark for a hint", systemImage: "sparkles")
+                        .font(.studyQuest(.subheadline, weight: .bold))
+                }
+                .padding(.horizontal, 20)
             }
 
             Text(feedbackText)
@@ -162,6 +191,16 @@ struct LessonDetailView: View {
         .background(settings.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.dashboardCornerRadius))
         .padding(.horizontal, 20)
+    }
+
+    private func showHint(for question: QuizQuestion) {
+        let currentIndex = hintIndexes[question.id, default: 0]
+        hintTextByQuestionID[question.id] = SparkTutorManager.hint(
+            for: question,
+            hintIndex: min(currentIndex, 2),
+            context: LessonContext(lesson: lesson)
+        )
+        hintIndexes[question.id] = min(currentIndex + 1, 2)
     }
 
     private func speakLesson() {
