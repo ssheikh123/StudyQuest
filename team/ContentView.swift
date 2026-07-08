@@ -62,8 +62,10 @@ struct ContentView: View {
                 isCompleted: appState.progress.lessonProgress.isCompleted(lesson),
                 nextLesson: appState.progress.lessonProgress.nextLesson(after: lesson, in: CurriculumData.subjects),
                 settings: settings,
+                isDownloaded: DownloadManager.isDownloaded(lesson, data: appState.downloads),
                 close: { activeLesson = nil },
                 completeLesson: { completeLesson(lesson) },
+                toggleDownload: { toggleDownload(for: lesson) },
                 openNextLesson: { nextLesson in
                     appState.progress.lessonProgress.currentLessonID = nextLesson.id
                     activeLesson = nextLesson
@@ -98,6 +100,7 @@ struct ContentView: View {
                 level: level,
                 progress: appState.progress.lessonProgress,
                 settings: settings,
+                downloadData: downloadsBinding,
                 startLesson: startLesson
             )
             .tabItem { Label(AppTab.lessons.title, systemImage: AppTab.lessons.iconName) }
@@ -117,8 +120,12 @@ struct ContentView: View {
             .tabItem { Label(AppTab.rewards.title, systemImage: AppTab.rewards.iconName) }
             .tag(AppTab.rewards)
 
-            ChatsView(settings: settings)
-                .tabItem { Label(AppTab.chats.title, systemImage: AppTab.chats.iconName) }
+            ChatsView(
+                profile: appState.profile,
+                settings: settings,
+                communityData: communityBinding
+            )
+            .tabItem { Label(AppTab.chats.title, systemImage: AppTab.chats.iconName) }
                 .tag(AppTab.chats)
 
             ProfileView(
@@ -138,6 +145,26 @@ struct ContentView: View {
         }
         .toolbarBackground(.visible, for: .tabBar)
         .toolbarBackground(settings.cardBackground, for: .tabBar)
+    }
+
+    private var communityBinding: Binding<CommunityData> {
+        Binding(
+            get: { appState.community },
+            set: { community in
+                appState.community = community
+                saveAppState()
+            }
+        )
+    }
+
+    private var downloadsBinding: Binding<DownloadData> {
+        Binding(
+            get: { appState.downloads },
+            set: { downloads in
+                appState.downloads = downloads
+                saveAppState()
+            }
+        )
     }
 
     private var rewardsWalletBinding: Binding<RewardsWallet> {
@@ -193,6 +220,7 @@ struct ContentView: View {
     private func prepareDailyProgression() {
         QuestManager.refreshDailyQuests(in: &appState.rewards.quests)
         appState.rewards.streak = StreakManager.normalized(appState.rewards.streak)
+        CommunityManager.seedSamplePostsIfNeeded(data: &appState.community)
         saveAppState()
     }
 
@@ -238,6 +266,15 @@ struct ContentView: View {
     private func startLesson(_ lesson: Lesson) {
         appState.progress.lessonProgress.currentLessonID = lesson.id
         activeLesson = lesson
+        saveAppState()
+    }
+
+    private func toggleDownload(for lesson: Lesson) {
+        if DownloadManager.isDownloaded(lesson, data: appState.downloads) {
+            DownloadManager.removeDownload(lesson, data: &appState.downloads)
+        } else {
+            DownloadManager.markDownloaded(lesson, data: &appState.downloads)
+        }
         saveAppState()
     }
 

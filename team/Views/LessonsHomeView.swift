@@ -5,6 +5,7 @@ struct LessonsHomeView: View {
     let level: Int
     let progress: LessonProgress
     let settings: AppAccessibilitySettings
+    @Binding var downloadData: DownloadData
     let startLesson: (Lesson) -> Void
 
     var body: some View {
@@ -12,6 +13,42 @@ struct LessonsHomeView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     HeaderBand(xp: xp, level: level, settings: settings)
+
+                    NavigationLink {
+                        DownloadsView(
+                            settings: settings,
+                            downloadData: $downloadData,
+                            startLesson: startLesson
+                        )
+                    } label: {
+                        HStack(spacing: 14) {
+                            Image(systemName: "arrow.down.circle.fill")
+                                .font(.system(size: 26, weight: .bold))
+                                .foregroundStyle(.white)
+                                .frame(width: 56, height: 56)
+                                .background(AppTheme.greenSuccess.gradient)
+                                .clipShape(RoundedRectangle(cornerRadius: 18))
+
+                            VStack(alignment: .leading, spacing: 5) {
+                                Text("Downloads")
+                                    .font(.studyQuest(.headline, weight: .bold))
+                                    .foregroundStyle(settings.primaryText)
+                                Text("\(downloadData.downloadedLessonIDs.count) lessons available offline")
+                                    .font(.studyQuest(.subheadline, weight: .semibold))
+                                    .foregroundStyle(settings.secondaryText)
+                            }
+
+                            Spacer()
+
+                            Image(systemName: "chevron.right")
+                                .font(.headline.weight(.bold))
+                                .foregroundStyle(settings.secondaryText)
+                        }
+                        .padding(16)
+                        .studyQuestCard(settings: settings)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 18)
 
                     Text("Learning Paths")
                         .font(.title2.weight(.bold))
@@ -24,6 +61,7 @@ struct LessonsHomeView: View {
                                     subject: subject,
                                     progress: progress,
                                     settings: settings,
+                                    downloadData: $downloadData,
                                     startLesson: startLesson
                                 )
                             } label: {

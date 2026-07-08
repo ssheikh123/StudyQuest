@@ -4,6 +4,7 @@ struct DifficultySelectionView: View {
     let subject: Subject
     let progress: LessonProgress
     let settings: AppAccessibilitySettings
+    @Binding var downloadData: DownloadData
     let startLesson: (Lesson) -> Void
 
     var body: some View {
@@ -23,6 +24,7 @@ struct DifficultySelectionView: View {
                                 difficulty: difficulty,
                                 progress: progress,
                                 settings: settings,
+                                downloadData: $downloadData,
                                 startLesson: startLesson
                             )
                         } label: {

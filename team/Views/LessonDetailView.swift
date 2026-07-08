@@ -6,8 +6,10 @@ struct LessonDetailView: View {
     let isCompleted: Bool
     let nextLesson: Lesson?
     let settings: AppAccessibilitySettings
+    let isDownloaded: Bool
     let close: () -> Void
     let completeLesson: () -> Void
+    let toggleDownload: () -> Void
     let openNextLesson: (Lesson) -> Void
 
     @State private var selectedAnswerIDs: [String: String] = [:]
@@ -35,6 +37,9 @@ struct LessonDetailView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     lessonHero
+
+                    downloadControl
+                        .padding(.horizontal, 20)
 
                     SparkTipCard(message: "Today we'll learn about \(lesson.title). You've got this!", settings: settings)
                         .padding(.horizontal, 20)
@@ -103,6 +108,20 @@ struct LessonDetailView: View {
                 SparkTutorView(context: LessonContext(lesson: lesson), settings: settings)
             }
         }
+    }
+
+    private var downloadControl: some View {
+        Button(action: toggleDownload) {
+            Label(isDownloaded ? "Downloaded" : "Download Lesson", systemImage: isDownloaded ? "checkmark.circle.fill" : "arrow.down.circle")
+                .font(.studyQuest(.headline, weight: .bold))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background((isDownloaded ? AppTheme.greenSuccess : lessonColor).opacity(0.13))
+                .foregroundStyle(isDownloaded ? AppTheme.greenSuccess : lessonColor)
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.buttonRadius))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(isDownloaded ? "Remove downloaded lesson" : "Download lesson")
     }
 
     private var lessonHero: some View {
