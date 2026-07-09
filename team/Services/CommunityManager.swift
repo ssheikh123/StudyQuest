@@ -32,49 +32,6 @@ enum CommunityManager {
         )
     ]
 
-    static func seedSamplePostsIfNeeded(data: inout CommunityData) {
-        guard !data.hasSeededSamplePosts else { return }
-
-        let samples: [String: [String]] = [
-            "algebra": [
-                "Can someone explain variables with a real example?",
-                "I finally understand solving equations after the worked example."
-            ],
-            "reading": [
-                "Context clues helped me figure out a word without looking it up.",
-                "What is your best tip for finding the main idea?"
-            ],
-            "biology": [
-                "This biology lesson was really interesting! Cells are like tiny cities.",
-                "Genetics makes more sense when I think about traits as instructions."
-            ],
-            "programming-fundamentals": [
-                "Programming loops make a lot more sense now.",
-                "I finally reached Level 5 while practicing arrays!"
-            ]
-        ]
-
-        let now = Date()
-        for room in rooms {
-            let messages = samples[room.id] ?? []
-            data.postsByRoomID[room.id] = messages.enumerated().map { index, message in
-                CommunityPost(
-                    id: "sample-\(room.id)-\(index)",
-                    roomID: room.id,
-                    userName: ["Maya", "Jordan", "Sam", "Riley"][index % 4],
-                    avatarColorID: AvatarColor.allCases[index % AvatarColor.allCases.count].id,
-                    avatarAccessoryID: AvatarAccessory.allCases[index % AvatarAccessory.allCases.count].id,
-                    createdAt: now.addingTimeInterval(TimeInterval(-(index + 1) * 2_700)),
-                    message: message,
-                    likedByUser: false,
-                    likeCount: index + 2
-                )
-            }
-        }
-
-        data.hasSeededSamplePosts = true
-    }
-
     static func posts(in room: CommunityRoom, data: CommunityData) -> [CommunityPost] {
         (data.postsByRoomID[room.id] ?? [])
             .sorted { $0.createdAt > $1.createdAt }
