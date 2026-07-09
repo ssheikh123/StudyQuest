@@ -78,4 +78,61 @@ enum CommunityManager {
 
         data.postsByRoomID[roomID] = posts
     }
+
+    static func seedSamplePostsIfNeeded(data: inout CommunityData) {
+        guard !data.hasSeededSamplePosts else { return }
+
+        let now = Date()
+        let samplePosts = [
+            CommunityPost(
+                id: "sample-algebra-graphing",
+                roomID: "algebra",
+                userName: "Maya",
+                avatarColorID: AvatarColor.mint.id,
+                avatarAccessoryID: AvatarAccessory.goggles.id,
+                createdAt: now.addingTimeInterval(-1_800),
+                message: "What helps you remember slope intercept form? I keep mixing up m and b.",
+                likedByUser: false,
+                likeCount: 3
+            ),
+            CommunityPost(
+                id: "sample-reading-evidence",
+                roomID: "reading",
+                userName: "Jordan",
+                avatarColorID: AvatarColor.gold.id,
+                avatarAccessoryID: AvatarAccessory.stars.id,
+                createdAt: now.addingTimeInterval(-5_400),
+                message: "My teacher says to cite evidence, but how much of the sentence should I quote?",
+                likedByUser: false,
+                likeCount: 5
+            ),
+            CommunityPost(
+                id: "sample-biology-cells",
+                roomID: "biology",
+                userName: "Sam",
+                avatarColorID: AvatarColor.coral.id,
+                avatarAccessoryID: AvatarAccessory.bolt.id,
+                createdAt: now.addingTimeInterval(-8_100),
+                message: "I made a mitochondria analogy: it is like a battery pack for the cell.",
+                likedByUser: false,
+                likeCount: 4
+            ),
+            CommunityPost(
+                id: "sample-programming-loops",
+                roomID: "programming-fundamentals",
+                userName: "Riley",
+                avatarColorID: AvatarColor.violet.id,
+                avatarAccessoryID: AvatarAccessory.rocket.id,
+                createdAt: now.addingTimeInterval(-10_800),
+                message: "For loops finally clicked when I traced the counter on paper first.",
+                likedByUser: false,
+                likeCount: 6
+            )
+        ]
+
+        for post in samplePosts {
+            data.postsByRoomID[post.roomID, default: []].append(post)
+        }
+        data.hasSeededSamplePosts = true
+    }
 }
