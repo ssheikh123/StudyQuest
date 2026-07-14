@@ -58,6 +58,7 @@ struct DailyQuestCard: View {
                     Button("Claim Reward", action: claim)
                         .font(.studyQuest(.caption, weight: .bold))
                         .buttonStyle(.borderedProminent)
+                        .studyQuestButtonFeedback()
                 }
             }
             .font(.studyQuest(.caption, weight: .bold))

@@ -38,6 +38,7 @@ struct AvatarCosmeticCard: View {
             .opacity(cosmetic.unlocked ? 1 : 0.62)
         }
         .buttonStyle(.plain)
+        .studyQuestButtonFeedback()
         .accessibilityLabel("\(cosmetic.name), \(statusText)")
     }
 

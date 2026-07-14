@@ -46,6 +46,7 @@ struct RecommendedLessonCard: View {
             .studyQuestCard(settings: settings)
         }
         .buttonStyle(.plain)
+        .studyQuestButtonFeedback()
         .accessibilityLabel("Start recommended lesson \(lesson.title)")
     }
 }

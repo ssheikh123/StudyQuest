@@ -139,6 +139,7 @@ private struct CommunityRoomView: View {
                         .clipShape(Circle())
                 }
                 .disabled(!canPost)
+                .studyQuestButtonFeedback()
                 .accessibilityLabel("Post message")
             }
 

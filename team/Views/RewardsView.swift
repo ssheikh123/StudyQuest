@@ -130,6 +130,8 @@ struct RewardsView: View {
 
     private func claimDailyReward() {
         if RewardsService.claimDailyReward(wallet: &wallet) {
+            FeedbackManager.reward()
+            FeedbackManager.earnCoins()
             message = RewardsMessage(title: "Daily Reward Claimed", body: "+\(RewardsCatalog.dailyRewardCoins) coins added to your wallet.")
         } else {
             message = RewardsMessage(title: "Already Claimed", body: "Come back tomorrow for another daily reward.")
@@ -139,6 +141,7 @@ struct RewardsView: View {
     private func purchase(_ item: ShopItem) {
         switch RewardsService.purchase(item, wallet: &wallet) {
         case .purchased:
+            FeedbackManager.purchase()
             applyCosmetic(item)
             message = RewardsMessage(title: "Purchased", body: "\(item.title) is now in your inventory.")
         case .alreadyOwned:
@@ -150,12 +153,20 @@ struct RewardsView: View {
     }
 
     private func applyCosmetic(_ item: ShopItem) {
-        if let newColor = item.avatarColor {
+        var didEquip = false
+
+        if let newColor = item.avatarColor, avatarColor != newColor {
             avatarColor = newColor
+            didEquip = true
         }
 
-        if let newAccessory = item.avatarAccessory {
+        if let newAccessory = item.avatarAccessory, avatarAccessory != newAccessory {
             avatarAccessory = newAccessory
+            didEquip = true
+        }
+
+        if didEquip {
+            FeedbackManager.equipCosmetic()
         }
     }
 }

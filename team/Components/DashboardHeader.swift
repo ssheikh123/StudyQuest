@@ -54,6 +54,7 @@ struct DashboardHeader: View {
                         .background(.white.opacity(0.18))
                         .clipShape(Circle())
                 }
+                .studyQuestButtonFeedback()
                 .accessibilityLabel("Notifications")
             }
 

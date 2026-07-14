@@ -28,8 +28,13 @@ struct ProfileView: View {
             .background(settings.screenBackground)
             .navigationTitle("Profile")
             .alert("Delete your StudyQuest profile?", isPresented: $showResetConfirmation) {
-                Button("Cancel", role: .cancel) { }
-                Button("Delete Profile", role: .destructive, action: resetProfile)
+                Button("Cancel", role: .cancel) {
+                    FeedbackManager.buttonTap()
+                }
+                Button("Delete Profile", role: .destructive) {
+                    FeedbackManager.buttonTap()
+                    resetProfile()
+                }
             } message: {
                 Text("This will erase your name, XP, coins, progress, lessons, rewards, avatar, purchased cosmetics, accessibility settings, theme, and daily streak. This action cannot be undone.")
             }
@@ -132,6 +137,7 @@ struct ProfileView: View {
                     .padding(.vertical, 14)
             }
             .buttonStyle(.borderedProminent)
+            .studyQuestButtonFeedback()
             .tint(.red)
         }
         .padding(18)

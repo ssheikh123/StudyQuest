@@ -22,5 +22,6 @@ struct ColorChoiceButton: View {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
+        .studyQuestButtonFeedback()
     }
 }

@@ -17,6 +17,7 @@ struct PrimaryButton: View {
                 .clipShape(RoundedRectangle(cornerRadius: AppTheme.buttonRadius))
         }
         .buttonStyle(.plain)
+        .studyQuestButtonFeedback()
         .accessibilityLabel(title)
     }
 }
@@ -38,6 +39,7 @@ struct SecondaryButton: View {
                 .clipShape(RoundedRectangle(cornerRadius: AppTheme.buttonRadius))
         }
         .buttonStyle(.plain)
+        .studyQuestButtonFeedback()
         .accessibilityLabel(title)
     }
 }

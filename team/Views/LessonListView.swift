@@ -135,6 +135,7 @@ private struct LessonPathRow: View {
                 .buttonStyle(.borderedProminent)
                 .tint(isUnlocked ? lesson.displayColor(colorblindMode: settings.colorblindMode) : .gray)
                 .disabled(!isUnlocked)
+                .studyQuestButtonFeedback()
                 .accessibilityLabel(isUnlocked ? "Start \(lesson.title)" : "\(lesson.title) locked")
             }
 
@@ -148,6 +149,7 @@ private struct LessonPathRow: View {
                     .clipShape(RoundedRectangle(cornerRadius: AppTheme.buttonRadius))
             }
             .buttonStyle(.plain)
+            .studyQuestButtonFeedback()
             .accessibilityLabel(isDownloaded ? "Remove downloaded lesson \(lesson.title)" : "Download lesson \(lesson.title)")
         }
         .padding(16)

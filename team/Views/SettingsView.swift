@@ -33,6 +33,12 @@ struct SettingsView: View {
                 Toggle(isOn: $settings.reduceMotion) {
                     Label("Reduce Motion", systemImage: "figure.walk.motion")
                 }
+                Toggle(isOn: $settings.enableHaptics) {
+                    Label("Enable Haptics", systemImage: "iphone.radiowaves.left.and.right")
+                }
+                Toggle(isOn: $settings.enableSounds) {
+                    Label("Enable Sounds", systemImage: "speaker.wave.2.fill")
+                }
             }
 
             Section("Preview") {

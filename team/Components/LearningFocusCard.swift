@@ -43,5 +43,6 @@ struct LearningFocusCard: View {
             )
         }
         .buttonStyle(.plain)
+        .studyQuestButtonFeedback()
     }
 }

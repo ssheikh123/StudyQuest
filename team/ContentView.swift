@@ -28,6 +28,7 @@ struct ContentView: View {
                                     .background(.regularMaterial)
                                     .clipShape(Circle())
                             }
+                            .studyQuestButtonFeedback()
                             .accessibilityLabel("Back to launch screen")
                             .padding(.top, 8)
                             .padding(.leading, 12)
@@ -55,7 +56,13 @@ struct ContentView: View {
                 transaction.disablesAnimations = true
             }
         }
-        .onAppear(perform: prepareDailyProgression)
+        .onAppear {
+            configureFeedback()
+            prepareDailyProgression()
+        }
+        .onChange(of: settings) { _, _ in
+            configureFeedback()
+        }
         .sheet(item: $activeLesson) { lesson in
             LessonDetailView(
                 lesson: lesson,
@@ -225,6 +232,7 @@ struct ContentView: View {
     }
 
     private func claimQuest(_ quest: DailyQuest) {
+        let previousLevel = level
         var questData = appState.rewards.quests
         var xp = appState.progress.xp
         var wallet = appState.rewards.wallet
@@ -238,6 +246,18 @@ struct ContentView: View {
             appState.rewards.quests = questData
             appState.progress.xp = xp
             appState.rewards.wallet = wallet
+
+            FeedbackManager.questComplete()
+            if quest.rewardXP > 0 {
+                FeedbackManager.gainXP()
+            }
+            if quest.rewardCoins > 0 {
+                FeedbackManager.earnCoins()
+            }
+            if Leveling.level(for: xp) > previousLevel {
+                FeedbackManager.levelUp()
+            }
+
             saveAppState()
         }
     }
@@ -279,6 +299,10 @@ struct ContentView: View {
     }
 
     private func completeLesson(_ lesson: Lesson) {
+        let previousLevel = level
+        let previousCoins = appState.rewards.wallet.coins
+        let previousCompletedQuestIDs = completedQuestIDs(in: appState.rewards.quests)
+        let previousBadgeIDs = unlockedRewardBadgeIDs()
         var progress = appState.progress.lessonProgress
         var xp = appState.progress.xp
 
@@ -313,14 +337,55 @@ struct ContentView: View {
                 }
             }
             appState.rewards.dailyStreak = appState.rewards.streak.currentStreak
+
+            FeedbackManager.finishLesson()
+            if xpEarned > 0 {
+                FeedbackManager.gainXP()
+            }
+            if appState.rewards.wallet.coins > previousCoins {
+                FeedbackManager.earnCoins()
+            }
+            if Leveling.level(for: xp) > previousLevel {
+                FeedbackManager.levelUp()
+            }
+            if completedQuestIDs(in: appState.rewards.quests).subtracting(previousCompletedQuestIDs).isEmpty == false {
+                FeedbackManager.questComplete()
+            }
+            if unlockedRewardBadgeIDs().subtracting(previousBadgeIDs).isEmpty == false {
+                FeedbackManager.badgeUnlock()
+            }
+
             saveAppState()
         }
+    }
+
+    private func configureFeedback() {
+        FeedbackManager.configure(settings: settings)
+    }
+
+    private func completedQuestIDs(in questData: QuestData) -> Set<String> {
+        Set(questData.quests.filter(\.completed).map(\.id))
+    }
+
+    private func unlockedRewardBadgeIDs() -> Set<String> {
+        Set(
+            RewardsCatalog.badges(
+                progress: appState.progress.lessonProgress,
+                xp: appState.progress.xp,
+                level: level,
+                streak: appState.rewards.streak,
+                unlockedBadgeIDs: appState.rewards.unlockedBadgeIDs
+            )
+            .filter(\.isUnlocked)
+            .map(\.id)
+        )
     }
 
     private func resetProfile() {
         activeLesson = nil
         selectedTab = .home
         appState = ProfileManager.resetLocalProfile()
+        configureFeedback()
         hasFinishedLaunch = true
     }
 

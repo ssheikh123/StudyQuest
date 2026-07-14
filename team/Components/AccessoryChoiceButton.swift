@@ -22,5 +22,6 @@ struct AccessoryChoiceButton: View {
             .padding(.vertical, 8)
         }
         .buttonStyle(.plain)
+        .studyQuestButtonFeedback()
     }
 }

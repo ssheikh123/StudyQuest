@@ -25,5 +25,6 @@ struct AnswerButton: View {
             )
         }
         .buttonStyle(.plain)
+        .studyQuestButtonFeedback()
     }
 }

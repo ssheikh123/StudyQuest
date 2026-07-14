@@ -98,6 +98,7 @@ struct AvatarStudioView: View {
 
         switch RewardsService.purchase(item, wallet: &wallet) {
         case .purchased:
+            FeedbackManager.purchase()
             equip(cosmetic)
             message = AvatarStudioMessage(title: "Unlocked", body: "\(cosmetic.name) is now available.")
         case .alreadyOwned:
@@ -109,12 +110,18 @@ struct AvatarStudioView: View {
 
     private func equip(_ cosmetic: AvatarCosmetic) {
         if let color = cosmetic.avatarColor {
-            selectedColor = color
+            if selectedColor != color {
+                selectedColor = color
+                FeedbackManager.equipCosmetic()
+            }
             return
         }
 
         if let accessory = cosmetic.avatarAccessory {
-            selectedAccessory = accessory
+            if selectedAccessory != accessory {
+                selectedAccessory = accessory
+                FeedbackManager.equipCosmetic()
+            }
             return
         }
 

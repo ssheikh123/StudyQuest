@@ -55,6 +55,7 @@ struct LessonCard: View {
                 }
             }
             .buttonStyle(.borderedProminent)
+            .studyQuestButtonFeedback()
             .tint(lessonColor)
             .accessibilityLabel(isCompleted ? "Retake lesson" : "Start lesson")
         }

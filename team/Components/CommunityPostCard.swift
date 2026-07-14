@@ -47,6 +47,7 @@ struct CommunityPostCard: View {
                     .clipShape(Capsule())
             }
             .buttonStyle(.plain)
+            .studyQuestButtonFeedback()
             .accessibilityLabel(post.likedByUser ? "Unlike post" : "Like post")
             .accessibilityValue("\(post.likeCount) likes")
         }

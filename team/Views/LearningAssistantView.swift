@@ -61,6 +61,7 @@ struct LearningAssistantView: View {
                                 } label: {
                                     Image(systemName: "speaker.wave.2.fill")
                                 }
+                                .studyQuestButtonFeedback()
                                 .accessibilityLabel("Speak assistant response")
                             }
                         }
@@ -93,6 +94,7 @@ struct LearningAssistantView: View {
                     .padding(.vertical, 8)
                     .background(settings.accentColor.opacity(0.12))
                     .clipShape(Capsule())
+                    .studyQuestButtonFeedback()
                 }
             }
             .padding(.horizontal, 16)
@@ -113,6 +115,7 @@ struct LearningAssistantView: View {
                     .frame(width: 44, height: 44)
             }
             .buttonStyle(.borderedProminent)
+            .studyQuestButtonFeedback()
             .disabled(inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSending)
             .accessibilityLabel("Send message")
         }

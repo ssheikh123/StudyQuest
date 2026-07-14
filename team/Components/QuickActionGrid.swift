@@ -37,6 +37,7 @@ struct QuickActionGrid: View {
                         .clipShape(RoundedRectangle(cornerRadius: AppTheme.dashboardCornerRadius))
                     }
                     .buttonStyle(.plain)
+                    .studyQuestButtonFeedback()
                     .accessibilityLabel(item.title)
                 }
             }

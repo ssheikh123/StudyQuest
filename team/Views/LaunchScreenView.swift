@@ -37,6 +37,7 @@ struct LaunchScreenView: View {
                         .background(.white)
                         .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius))
                 }
+                .studyQuestButtonFeedback()
                 .accessibilityLabel("Start Learning")
             }
             .padding(28)

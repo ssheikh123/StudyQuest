@@ -36,14 +36,21 @@ struct DownloadedLessonRow: View {
             Spacer(minLength: 0)
 
             Menu {
-                Button("Start Lesson", systemImage: "play.fill", action: startLesson)
-                Button("Remove Download", systemImage: "trash", role: .destructive, action: removeDownload)
+                Button("Start Lesson", systemImage: "play.fill") {
+                    FeedbackManager.buttonTap()
+                    startLesson()
+                }
+                Button("Remove Download", systemImage: "trash", role: .destructive) {
+                    FeedbackManager.buttonTap()
+                    removeDownload()
+                }
             } label: {
                 Image(systemName: "ellipsis.circle.fill")
                     .font(.title3.weight(.bold))
                     .foregroundStyle(lessonColor)
                     .frame(width: 44, height: 44)
             }
+            .studyQuestButtonFeedback()
             .accessibilityLabel("Download options for \(lesson.title)")
         }
         .padding(16)

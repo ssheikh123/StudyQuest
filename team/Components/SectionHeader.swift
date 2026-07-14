@@ -23,6 +23,7 @@ struct SectionHeader: View {
             if let actionTitle, let action {
                 Button(actionTitle, action: action)
                     .font(.studyQuest(.subheadline, weight: .bold))
+                    .studyQuestButtonFeedback()
             }
         }
     }

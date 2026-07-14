@@ -35,6 +35,7 @@ struct ShopItemCard: View {
                     .padding(.vertical, 10)
             }
             .buttonStyle(.borderedProminent)
+            .studyQuestButtonFeedback()
             .tint(isOwned ? AppTheme.greenSuccess : item.color)
             .disabled(isOwned || !canAfford)
             .opacity((isOwned || canAfford) ? 1 : 0.55)

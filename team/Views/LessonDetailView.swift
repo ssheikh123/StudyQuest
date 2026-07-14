@@ -39,7 +39,8 @@ struct LessonDetailView: View {
                     lessonHero
 
                     downloadControl
-                        .padding(.horizontal, 20)
+                        .studyQuestButtonFeedback()
+                .padding(.horizontal, 20)
 
                     SystemTipCard(message: "Today we'll learn about \(lesson.title). You've got this!", settings: settings)
                         .padding(.horizontal, 20)
@@ -81,10 +82,14 @@ struct LessonDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Close", action: close)
+                    Button("Close") {
+                        FeedbackManager.buttonTap()
+                        close()
+                    }
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
+                        FeedbackManager.buttonTap()
                         showsLearningAssistant = true
                     } label: {
                         Label("Assistant", systemImage: "graduationcap.fill")
@@ -92,13 +97,17 @@ struct LessonDetailView: View {
                 }
                 if settings.textToSpeech {
                     ToolbarItem(placement: .primaryAction) {
-                        Button(action: speakLesson) {
+                        Button {
+                            FeedbackManager.buttonTap()
+                            speakLesson()
+                        } label: {
                             Label("Speak", systemImage: "speaker.wave.2.fill")
                         }
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(canShowCompletion ? "Done" : "Submit") {
+                        FeedbackManager.buttonTap()
                         submitQuiz()
                     }
                     .disabled(!hasAnsweredEveryQuestion && !canShowCompletion)
@@ -121,6 +130,7 @@ struct LessonDetailView: View {
                 .clipShape(RoundedRectangle(cornerRadius: AppTheme.buttonRadius))
         }
         .buttonStyle(.plain)
+        .studyQuestButtonFeedback()
         .accessibilityLabel(isDownloaded ? "Remove downloaded lesson" : "Download lesson")
     }
 
@@ -173,6 +183,7 @@ struct LessonDetailView: View {
                     Label("Get a hint", systemImage: "lightbulb.fill")
                         .font(.studyQuest(.subheadline, weight: .bold))
                 }
+                .studyQuestButtonFeedback()
                 .padding(.horizontal, 20)
             }
 
@@ -195,6 +206,7 @@ struct LessonDetailView: View {
 
             if let nextLesson {
                 Button {
+                    FeedbackManager.unlockLesson()
                     openNextLesson(nextLesson)
                 } label: {
                     Label("Unlock Next Lesson", systemImage: "arrow.right.circle.fill")
@@ -203,6 +215,7 @@ struct LessonDetailView: View {
                         .padding(.vertical, 12)
                 }
                 .buttonStyle(.borderedProminent)
+                .studyQuestButtonFeedback()
                 .tint(lessonColor)
             }
         }
@@ -248,10 +261,12 @@ struct LessonDetailView: View {
         }
 
         if isCorrect {
+            FeedbackManager.quizCorrect()
             didCompleteLesson = true
             feedbackText = "Correct! XP added and the next lesson is unlocked."
             completeLesson()
         } else {
+            FeedbackManager.quizWrong()
             feedbackText = "Not quite. Review your answers and try again."
         }
     }
