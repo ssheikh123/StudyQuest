@@ -227,7 +227,7 @@ struct LessonDetailView: View {
 
     private func showHint(for question: QuizQuestion) {
         let currentIndex = hintIndexes[question.id, default: 0]
-        hintTextByQuestionID[question.id] = LearningAssistantManager.hint(
+        hintTextByQuestionID[question.id] = AIManager.shared.hint(
             for: question,
             hintIndex: min(currentIndex, 2),
             context: LessonContext(lesson: lesson)

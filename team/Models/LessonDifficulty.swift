@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum LessonDifficulty: String, CaseIterable, Identifiable {
+enum LessonDifficulty: String, CaseIterable, Identifiable, Codable {
     case beginner = "Beginner"
     case intermediate = "Intermediate"
     case advanced = "Advanced"
