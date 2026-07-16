@@ -9,7 +9,9 @@ enum PromptBuilder {
         conversation: Conversation
     ) -> AIPromptRequest {
         let trimmedLatestMessage = latestMessage.trimmingCharacters(in: .whitespacesAndNewlines)
-        var history = conversation.messages.filter { $0.sender != .system }
+        var history = conversation.messages.filter { message in
+            message.sender != .system && message.deliveryState != .failed
+        }
         if history.last?.sender == .student,
            history.last?.content.trimmingCharacters(in: .whitespacesAndNewlines) == trimmedLatestMessage {
             history.removeLast()
@@ -66,35 +68,12 @@ enum PromptBuilder {
 
     private static func lessonContextBlock(for context: LessonContext) -> String {
         """
-        Current lesson context. Use only this lesson. Do not use unrelated curriculum.
+        Current lesson context. Use only this lesson.
 
-        Lesson ID: \(context.lessonID)
+        Lesson title: \(context.lessonTitle)
         Subject: \(context.subject)
-        Title: \(context.lessonTitle)
         Difficulty: \(context.difficulty.rawValue)
-
-        Learning objectives:
-        \(bullets(context.learningObjectives))
-
-        Lesson explanation:
-        \(context.lessonExplanation)
-
-        Worked examples:
-        \(bullets(context.workedExamples))
-
-        Hints available:
-        \(bullets(context.hintText))
-
-        Quiz topics. These are topics only, not answer keys:
-        \(bullets(context.quizTopics))
-
-        Keywords:
-        \(context.keywords.joined(separator: ", "))
+        Current objective: \(context.currentObjective)
         """
-    }
-
-    private static func bullets(_ values: [String]) -> String {
-        guard !values.isEmpty else { return "- None provided" }
-        return values.map { "- \($0)" }.joined(separator: "\n")
     }
 }

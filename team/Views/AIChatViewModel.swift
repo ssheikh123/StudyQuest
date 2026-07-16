@@ -96,7 +96,6 @@ final class AIChatViewModel: ObservableObject {
                     )
                     conversation.messages.append(failedMessage)
                     conversation.updatedDate = Date()
-                    aiManager.save(conversation)
                 }
             }
         }

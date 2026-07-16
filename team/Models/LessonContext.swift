@@ -35,6 +35,10 @@ struct LessonContext: Codable, Equatable {
         "\(subject) • \(lessonTitle) • \(difficulty.rawValue)"
     }
 
+    var currentObjective: String {
+        learningObjectives.first ?? "Understand \(lessonTitle)."
+    }
+
     private static func keywords(from lesson: Lesson) -> [String] {
         let source = [lesson.subjectTitle, lesson.title, lesson.introduction, lesson.explanation]
             .joined(separator: " ")

@@ -13,7 +13,7 @@ struct APIConfiguration {
 
         return APIConfiguration(
             apiKey: apiKey,
-            model: Self.firstValue(for: ["GEMINI_MODEL", "GOOGLE_AI_MODEL"]) ?? "gemini-3.5-flash",
+            model: Self.firstValue(for: ["GEMINI_MODEL", "GOOGLE_AI_MODEL"]) ?? "gemini-3.1-flash-lite",
             timeoutInterval: 30,
             maxRetryCount: 2
         )

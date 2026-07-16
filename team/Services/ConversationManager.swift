@@ -19,7 +19,7 @@ final class ConversationManager {
 
     func conversation(for lessonID: String) -> Conversation {
         if let conversation = conversationsByLessonID[lessonID] {
-            return conversation
+            return sanitized(conversation)
         }
 
         let conversation = Conversation(
@@ -37,7 +37,7 @@ final class ConversationManager {
     }
 
     func save(_ conversation: Conversation) {
-        var updatedConversation = conversation
+        var updatedConversation = sanitized(conversation)
         updatedConversation.updatedDate = Date()
         updatedConversation.messages = compactedMessages(updatedConversation.messages)
         conversationsByLessonID[updatedConversation.lessonID] = updatedConversation
@@ -47,6 +47,12 @@ final class ConversationManager {
     func clearConversation(for lessonID: String) {
         conversationsByLessonID.removeValue(forKey: lessonID)
         persist()
+    }
+
+    private func sanitized(_ conversation: Conversation) -> Conversation {
+        var conversation = conversation
+        conversation.messages = conversation.messages.filter { $0.deliveryState != .failed }
+        return conversation
     }
 
     private func compactedMessages(_ messages: [ChatMessage]) -> [ChatMessage] {
@@ -74,15 +80,23 @@ final class ConversationManager {
         decoder: JSONDecoder
     ) -> [String: Conversation] {
         if let conversations = decodeConversations(forKey: storageKey, decoder: decoder) {
-            return conversations
+            return sanitized(conversations)
         }
 
         if let conversations = decodeConversations(forKey: legacyStorageKey, decoder: decoder) {
             UserDefaults.standard.removeObject(forKey: legacyStorageKey)
-            return conversations
+            return sanitized(conversations)
         }
 
         return [:]
+    }
+
+    private static func sanitized(_ conversations: [String: Conversation]) -> [String: Conversation] {
+        conversations.mapValues { conversation in
+            var conversation = conversation
+            conversation.messages = conversation.messages.filter { $0.deliveryState != .failed }
+            return conversation
+        }
     }
 
     private static func decodeConversations(forKey key: String, decoder: JSONDecoder) -> [String: Conversation]? {
