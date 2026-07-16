@@ -4,14 +4,14 @@ final class AIManager {
     static let shared = AIManager()
 
     private let conversationManager: ConversationManager
-    private let serviceResult: Result<OpenAIService, OpenAIServiceError>
+    private let serviceResult: Result<GeminiService, GeminiServiceError>
     private var contextCache: [String: LessonContext] = [:]
 
     private init(conversationManager: ConversationManager = .shared) {
         self.conversationManager = conversationManager
         do {
-            serviceResult = .success(OpenAIService(configuration: try APIConfiguration.development()))
-        } catch let error as OpenAIServiceError {
+            serviceResult = .success(GeminiService(configuration: try APIConfiguration.development()))
+        } catch let error as GeminiServiceError {
             serviceResult = .failure(error)
         } catch {
             serviceResult = .failure(.unavailable)
@@ -35,7 +35,7 @@ final class AIManager {
         _ message: String,
         context: LessonContext,
         conversation: Conversation
-    ) async -> Result<String, OpenAIServiceError> {
+    ) async -> Result<String, GeminiServiceError> {
         cache(context)
 
         switch serviceResult {
@@ -48,7 +48,7 @@ final class AIManager {
                 )
                 let response = try await service.send(request: promptRequest)
                 return .success(response)
-            } catch let error as OpenAIServiceError {
+            } catch let error as GeminiServiceError {
                 return .failure(error)
             } catch {
                 return .failure(.unavailable)

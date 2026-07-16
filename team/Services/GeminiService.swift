@@ -1,6 +1,8 @@
 import Foundation
 
-enum OpenAIServiceError: LocalizedError, Equatable {
+// User-facing AI failures are normalized here so the chat UI never has to understand
+// raw networking errors, HTTP status codes, or provider-specific Gemini messages.
+enum GeminiServiceError: LocalizedError, Equatable {
     case invalidAPIKey
     case noInternet
     case timeout
@@ -32,7 +34,9 @@ enum OpenAIServiceError: LocalizedError, Equatable {
     }
 }
 
-struct OpenAIService {
+// Gemini-backed networking for the AI tutor. The rest of the app depends on this
+// small send(request:) API instead of knowing about Gemini request/response details.
+struct GeminiService {
     private static let encoder = JSONEncoder()
     private static let decoder = JSONDecoder()
 
@@ -51,7 +55,10 @@ struct OpenAIService {
         }
     }
 
+    // Sends a prompt to Gemini using what is included in the message to the AI.
     func send(request promptRequest: AIPromptRequest) async throws -> String {
+        // PromptBuilder already optimized the lesson context and recent chat history.
+        // This layer only translates that provider-agnostic prompt into Gemini's shape.
         let request = GeminiGenerateContentRequest(
             systemInstruction: GeminiContent(
                 role: nil,
@@ -59,12 +66,17 @@ struct OpenAIService {
             ),
             contents: promptRequest.input.map(GeminiContent.init(message:)),
             generationConfig: GeminiGenerationConfig(
+                // Higher temperature for more creative responses, lower for direct
+                // More output tokens for more words output
                 temperature: 0.55,
                 maxOutputTokens: 320
             )
         )
 
+        
         var lastError: Error?
+        // Exponential backoff handles temporary Gemini/API/network problems without
+        // making the student manually retry every transient failure.
         for attempt in 0...configuration.maxRetryCount {
             do {
                 return try await perform(request)
@@ -78,10 +90,12 @@ struct OpenAIService {
             }
         }
 
-        throw mapError(lastError ?? OpenAIServiceError.unavailable)
+        throw mapError(lastError ?? GeminiServiceError.unavailable)
     }
 
     private func perform(_ body: GeminiGenerateContentRequest) async throws -> String {
+        // This is the only place that performs network I/O for the tutor, keeping
+        // SwiftUI views and managers free of URLSession and provider details.
         var urlRequest = URLRequest(url: try endpointURL())
         urlRequest.httpMethod = "POST"
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -89,34 +103,37 @@ struct OpenAIService {
 
         let (data, response) = try await session.data(for: urlRequest)
         guard let httpResponse = response as? HTTPURLResponse else {
-            throw OpenAIServiceError.unavailable
+            throw GeminiServiceError.unavailable
         }
 
+        // Map HTTP responses into the app's stable error language so the rest of
+        // StudyQuest behaves the same even if the AI provider changes again later.
         switch httpResponse.statusCode {
         case 200..<300:
             let decoded = try Self.decoder.decode(GeminiGenerateContentResponse.self, from: data)
             guard let outputText = decoded.resolvedText?.trimmingCharacters(in: .whitespacesAndNewlines), !outputText.isEmpty else {
-                throw OpenAIServiceError.emptyResponse
+                throw GeminiServiceError.emptyResponse
             }
             return outputText
         case 400:
             let apiError = try? Self.decoder.decode(GeminiErrorResponse.self, from: data)
-            throw OpenAIServiceError.requestFailed(apiError?.error.message ?? "The AI tutor could not complete that request.")
+            throw GeminiServiceError.requestFailed(apiError?.error.message ?? "The AI tutor could not complete that request.")
         case 401, 403:
-            throw OpenAIServiceError.invalidAPIKey
+            throw GeminiServiceError.invalidAPIKey
         case 408:
-            throw OpenAIServiceError.timeout
+            throw GeminiServiceError.timeout
         case 429:
-            throw OpenAIServiceError.rateLimited
+            throw GeminiServiceError.rateLimited
         case 500..<600:
-            throw OpenAIServiceError.unavailable
+            throw GeminiServiceError.unavailable
         default:
             let apiError = try? Self.decoder.decode(GeminiErrorResponse.self, from: data)
-            throw OpenAIServiceError.requestFailed(apiError?.error.message ?? "The AI tutor could not complete that request.")
+            throw GeminiServiceError.requestFailed(apiError?.error.message ?? "The AI tutor could not complete that request.")
         }
     }
 
     private func endpointURL() throws -> URL {
+        // URLComponents avoids fragile string interpolation for the API key query item.
         var components = URLComponents()
         components.scheme = "https"
         components.host = "generativelanguage.googleapis.com"
@@ -124,13 +141,15 @@ struct OpenAIService {
         components.queryItems = [URLQueryItem(name: "key", value: configuration.apiKey)]
 
         guard let url = components.url else {
-            throw OpenAIServiceError.requestFailed("The AI tutor could not build a Gemini request.")
+            throw GeminiServiceError.requestFailed("The AI tutor could not build a Gemini request.")
         }
         return url
     }
 
-    private func mapError(_ error: Error) -> OpenAIServiceError {
-        if let serviceError = error as? OpenAIServiceError {
+    private func mapError(_ error: Error) -> GeminiServiceError {
+        // URLSession and Gemini can fail in many different ways; the UI only needs
+        // a small set of clear, student-friendly states.
+        if let serviceError = error as? GeminiServiceError {
             return serviceError
         }
 
@@ -154,7 +173,7 @@ struct OpenAIService {
         return .unavailable
     }
 
-    private func shouldRetry(_ error: OpenAIServiceError) -> Bool {
+    private func shouldRetry(_ error: GeminiServiceError) -> Bool {
         switch error {
         case .timeout, .rateLimited, .unavailable, .noInternet:
             return true
@@ -173,6 +192,12 @@ struct ResponsesInputMessage: Codable, Equatable {
     let role: String
     let content: String
 }
+
+@available(*, deprecated, renamed: "GeminiService")
+typealias OpenAIService = GeminiService
+
+@available(*, deprecated, renamed: "GeminiServiceError")
+typealias OpenAIServiceError = GeminiServiceError
 
 private struct GeminiGenerateContentRequest: Encodable {
     let systemInstruction: GeminiContent

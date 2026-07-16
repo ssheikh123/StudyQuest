@@ -8,14 +8,14 @@ struct APIConfiguration {
 
     static func development() throws -> APIConfiguration {
         guard let apiKey = Self.firstValue(for: ["GEMINI_API_KEY", "GOOGLE_API_KEY", "API_KEY"]), !apiKey.isEmpty else {
-            throw OpenAIServiceError.invalidAPIKey
+            throw GeminiServiceError.invalidAPIKey
         }
 
         return APIConfiguration(
             apiKey: apiKey,
             model: Self.firstValue(for: ["GEMINI_MODEL", "GOOGLE_AI_MODEL"]) ?? "gemini-3.1-flash-lite",
-            timeoutInterval: 30,
-            maxRetryCount: 2
+            timeoutInterval: 60,
+            maxRetryCount: 3
         )
     }
 
