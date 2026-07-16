@@ -2,7 +2,6 @@ import SwiftUI
 
 struct RewardsSummaryCard: View {
     let level: Int
-    let xp: Int
     let coins: Int
     let settings: AppAccessibilitySettings
 
@@ -12,7 +11,6 @@ struct RewardsSummaryCard: View {
 
             HStack(spacing: 12) {
                 SummaryMetric(title: "Level", value: "\(level)", iconName: "star.fill", color: AppTheme.primary, settings: settings)
-                SummaryMetric(title: "XP", value: "\(xp)", iconName: "bolt.fill", color: AppTheme.purpleAccent, settings: settings)
                 SummaryMetric(title: "Coins", value: "\(coins)", iconName: "circle.hexagongrid.fill", color: AppTheme.goldReward, settings: settings)
             }
         }

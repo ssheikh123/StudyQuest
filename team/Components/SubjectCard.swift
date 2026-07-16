@@ -15,7 +15,7 @@ struct SubjectCard: View {
     }
 
     private var subjectColor: Color {
-        settings.colorblindMode ? Lesson.colorblindColor(for: subject.id) : subject.color
+        AppTheme.subjectColor(for: subject.id, colorblindMode: settings.colorblindMode)
     }
 
     var body: some View {

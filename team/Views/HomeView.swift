@@ -18,6 +18,12 @@ struct HomeView: View {
     @State private var quote = HomeDashboardData.sample.quotes.randomElement() ?? "Small progress each day adds up."
     @State private var activeAlert: HomeDashboardAlert?
     @State private var showsLearningAssistant = false
+    @AppStorage("studyQuest.weeklyGoal.kind") private var weeklyGoalKindRaw = WeeklyGoalKind.lessons.rawValue
+    @AppStorage("studyQuest.weeklyGoal.target") private var weeklyGoalTarget = 3
+    @AppStorage("studyQuest.weeklyGoal.baselineLevel") private var weeklyGoalBaselineLevel = 1
+    @AppStorage("studyQuest.weeklyGoal.baselineLessons") private var weeklyGoalBaselineLessons = 0
+    @AppStorage("studyQuest.weeklyGoal.baselineXP") private var weeklyGoalBaselineXP = 0
+    @AppStorage("studyQuest.weeklyGoal.week") private var weeklyGoalWeek = ""
 
     private let dashboardData = HomeDashboardData.sample
 
@@ -31,11 +37,29 @@ struct HomeView: View {
         return Double(progress.completedLessonIDs.count) / Double(totalLessons)
     }
 
-    private var recommendedLessons: [(metadata: RecommendedLesson, lesson: Lesson)] {
-        dashboardData.recommendedLessons.compactMap { metadata in
-            guard let lesson = CurriculumData.lesson(withID: metadata.lessonID) else { return nil }
-            return (metadata, lesson)
+    private var weeklyGoalKind: WeeklyGoalKind {
+        WeeklyGoalKind(rawValue: weeklyGoalKindRaw) ?? .lessons
+    }
+
+    private var weeklyLessonsCompleted: Int {
+        max(0, progress.completedLessonIDs.count - weeklyGoalBaselineLessons)
+    }
+
+    private var weeklyXPEarned: Int {
+        max(0, xp - weeklyGoalBaselineXP)
+    }
+
+    private var weeklyGoalCompleted: Int {
+        switch weeklyGoalKind {
+        case .lessons:
+            return weeklyLessonsCompleted
+        case .levels:
+            return max(0, level - weeklyGoalBaselineLevel)
         }
+    }
+
+    private var liveWeeklyProgress: WeeklyProgress {
+        WeeklyProgress(lessonsCompleted: weeklyLessonsCompleted, xpEarned: weeklyXPEarned)
     }
 
     var body: some View {
@@ -45,7 +69,7 @@ struct HomeView: View {
                     DashboardHeader(
                         learnerName: userName,
                         level: level,
-                        xp: xp,
+                        xpUntilNextLevel: Leveling.xpUntilNextLevel(for: xp),
                         coins: coins,
                         avatarColor: avatarColor,
                         avatarAccessory: avatarAccessory,
@@ -74,11 +98,15 @@ struct HomeView: View {
 
                     SystemTipCard(message: "Complete another quest to keep your momentum going.", settings: settings)
 
-                    recommendedSection
-
                     WeeklyProgressCard(
-                        weeklyProgress: dashboardData.weeklyProgress,
-                        settings: settings
+                        weeklyProgress: liveWeeklyProgress,
+                        goalKind: weeklyGoalKind,
+                        goalTarget: weeklyGoalTarget,
+                        goalCompleted: weeklyGoalCompleted,
+                        settings: settings,
+                        selectGoalKind: selectWeeklyGoalKind,
+                        adjustGoalTarget: adjustWeeklyGoalTarget,
+                        resetGoal: resetWeeklyGoalBaseline
                     )
 
                     QuickActionGrid(actions: quickActions, settings: settings)
@@ -102,6 +130,7 @@ struct HomeView: View {
             .sheet(isPresented: $showsLearningAssistant) {
                 LearningAssistantView(context: currentLessonContext, settings: settings)
             }
+            .onAppear(perform: refreshWeeklyGoalIfNeeded)
         }
     }
 
@@ -127,32 +156,6 @@ struct HomeView: View {
         }
     }
 
-    private var recommendedSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            SectionHeader(
-                title: "Recommended Lessons",
-                subtitle: "Pick your next adventure",
-                actionTitle: "See All",
-                action: { selectTab(.lessons) }
-            )
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 14) {
-                    ForEach(recommendedLessons, id: \.metadata.id) { item in
-                        RecommendedLessonCard(
-                            lesson: item.lesson,
-                            difficulty: item.metadata.difficulty,
-                            estimatedTime: item.metadata.estimatedTime,
-                            settings: settings,
-                            action: { startLesson(item.lesson) }
-                        )
-                    }
-                }
-                .padding(.vertical, 4)
-            }
-        }
-    }
-
     private var quickActions: [QuickAction] {
         [
             QuickAction(id: "resume", title: "Resume Lesson", iconName: "play.fill", color: .green) {
@@ -173,6 +176,33 @@ struct HomeView: View {
                 selectTab(.chats)
             }
         ]
+    }
+
+    private func selectWeeklyGoalKind(_ kind: WeeklyGoalKind) {
+        weeklyGoalKindRaw = kind.rawValue
+    }
+
+    private func adjustWeeklyGoalTarget(by amount: Int) {
+        weeklyGoalTarget = min(max(weeklyGoalTarget + amount, 1), 12)
+    }
+
+    private func refreshWeeklyGoalIfNeeded() {
+        if weeklyGoalWeek != currentWeekIdentifier {
+            resetWeeklyGoalBaseline()
+        }
+    }
+
+    private func resetWeeklyGoalBaseline() {
+        weeklyGoalWeek = currentWeekIdentifier
+        weeklyGoalBaselineLevel = level
+        weeklyGoalBaselineLessons = progress.completedLessonIDs.count
+        weeklyGoalBaselineXP = xp
+    }
+
+    private var currentWeekIdentifier: String {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
+        return "\(components.yearForWeekOfYear ?? 0)-\(components.weekOfYear ?? 0)"
     }
 }
 

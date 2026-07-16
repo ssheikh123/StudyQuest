@@ -27,10 +27,8 @@ struct HomeDashboardData {
             isComplete: false
         ),
         weeklyProgress: WeeklyProgress(
-            lessonsCompleted: 4,
-            xpEarned: 160,
-            goalText: "4 of 6 lessons",
-            goalProgress: 0.67
+            lessonsCompleted: 0,
+            xpEarned: 0
         ),
         recommendedLessons: [
             RecommendedLesson(lessonID: "algebra-variables-expressions", difficulty: "Beginner", estimatedTime: "5 min"),
@@ -58,8 +56,6 @@ struct DailyChallenge {
 struct WeeklyProgress {
     let lessonsCompleted: Int
     let xpEarned: Int
-    let goalText: String
-    let goalProgress: Double
 }
 
 struct RecommendedLesson: Identifiable {

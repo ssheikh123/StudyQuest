@@ -14,11 +14,23 @@ struct ProfileView: View {
 
     @State private var showResetConfirmation = false
 
+    private var completedCount: Int {
+        progress.completedLessonIDs.count
+    }
+
+    private var totalLessons: Int {
+        CurriculumData.beginnerLessons.count
+    }
+
+    private var selectedFocusSubject: Subject? {
+        CurriculumData.subjects.first { $0.id == learningFocusSubjectID }
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    profilePlaceholder
+                    profileHeader
                     learningFocusSection
                     currentTools
                     accountSection
@@ -41,27 +53,55 @@ struct ProfileView: View {
         }
     }
 
-    private var profilePlaceholder: some View {
-        VStack(spacing: 14) {
-            Image(systemName: "person.crop.circle.fill")
-                .font(.system(size: 54, weight: .bold))
-                .foregroundStyle(settings.accentColor)
-                .frame(width: 96, height: 96)
-                .background(settings.accentColor.opacity(0.14))
-                .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius))
+    private var profileHeader: some View {
+        VStack(spacing: 18) {
+            HStack(spacing: 16) {
+                AvatarPreview(color: avatarColor.color, accessory: avatarAccessory, contentScale: 0.70, reduceMotion: true)
+                    .frame(width: 128, height: 128)
+                    .background(AppTheme.primary.opacity(settings.darkMode ? 0.18 : 0.10))
+                    .clipShape(Circle())
+                    .overlay {
+                        Circle()
+                            .stroke(settings.darkMode ? Color.white.opacity(0.10) : Color.white.opacity(0.8), lineWidth: 1)
+                    }
+                    .accessibilityLabel("Current avatar")
 
-            VStack(spacing: 6) {
-                Text("Profile")
-                    .font(.largeTitle.weight(.bold))
-                Text("Coming Soon")
-                    .font(.headline)
-                    .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Level \(level) Explorer")
+                        .font(.studyQuest(.title2, weight: .bold))
+                        .foregroundStyle(settings.primaryText)
+                    Text("\(Leveling.xpUntilNextLevel(for: xp)) EXP until next level")
+                        .font(.studyQuest(.headline, weight: .semibold))
+                        .foregroundStyle(settings.secondaryText)
+                    Text(selectedFocusSubject?.title ?? "Choose a learning focus")
+                        .font(.studyQuest(.caption, weight: .bold))
+                        .foregroundStyle(settings.darkMode ? Color(red: 0.17, green: 0.08, blue: 0.42) : Color.black)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 7)
+                        .background(settings.darkMode ? Color(red: 0.86, green: 0.80, blue: 1.0) : AppTheme.primary.opacity(0.12))
+                        .clipShape(Capsule())
+                }
+
+                Spacer(minLength: 0)
+            }
+
+            XPBar(xp: xp, settings: settings)
+                .padding(14)
+                .background(settings.screenBackground)
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.fieldRadius, style: .continuous))
+
+            HStack(spacing: 10) {
+                ProfileStatChip(title: "Lessons", value: "\(completedCount)/\(totalLessons)", iconName: "book.closed.fill", color: AppTheme.blueAccent, settings: settings)
+                ProfileStatChip(title: "Coins", value: "\(wallet.coins)", iconName: "circle.hexagongrid.fill", color: AppTheme.goldReward, settings: settings)
+                ProfileStatChip(title: "Badges", value: "\(unlockedBadgeCount)", iconName: "rosette", color: AppTheme.pinkCommunity, settings: settings)
             }
         }
-        .frame(maxWidth: .infinity)
-        .padding(22)
-        .background(settings.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius))
+        .padding(18)
+        .studyQuestCard(settings: settings, radius: AppTheme.cardRadius)
+    }
+
+    private var unlockedBadgeCount: Int {
+        RewardsCatalog.badges(progress: progress, xp: xp, level: level, streak: StreakData()).filter(\.isUnlocked).count
     }
 
     private var learningFocusSection: some View {
@@ -83,8 +123,9 @@ struct ProfileView: View {
 
     private var currentTools: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Current Tools")
-                .font(.title3.weight(.bold))
+            Text("Tools")
+                .font(.studyQuest(.title3, weight: .bold))
+                .foregroundStyle(settings.primaryText)
 
             NavigationLink {
                 AvatarStudioView(
@@ -119,20 +160,20 @@ struct ProfileView: View {
             }
         }
         .padding(18)
-        .background(settings.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius))
+        .studyQuestCard(settings: settings, radius: AppTheme.cornerRadius)
     }
 
     private var accountSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Account")
-                .font(.title3.weight(.bold))
+                .font(.studyQuest(.title3, weight: .bold))
+                .foregroundStyle(settings.primaryText)
 
             Button(role: .destructive) {
                 showResetConfirmation = true
             } label: {
                 Label("Delete Profile", systemImage: "trash.fill")
-                    .font(.headline.weight(.bold))
+                    .font(.studyQuest(.headline, weight: .bold))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
             }
@@ -141,8 +182,38 @@ struct ProfileView: View {
             .tint(.red)
         }
         .padding(18)
-        .background(settings.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius))
+        .studyQuestCard(settings: settings, radius: AppTheme.cornerRadius)
+    }
+}
+
+private struct ProfileStatChip: View {
+    let title: String
+    let value: String
+    let iconName: String
+    let color: Color
+    let settings: AppAccessibilitySettings
+
+    var body: some View {
+        VStack(spacing: 7) {
+            Image(systemName: iconName)
+                .font(.headline.weight(.bold))
+                .foregroundStyle(color)
+            Text(value)
+                .font(.studyQuest(.headline, weight: .bold))
+                .foregroundStyle(settings.primaryText)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+            Text(title)
+                .font(.studyQuest(.caption2, weight: .bold))
+                .foregroundStyle(settings.secondaryText)
+                .textCase(.uppercase)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .background(settings.screenBackground)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.fieldRadius, style: .continuous))
     }
 }
 
@@ -156,27 +227,27 @@ private struct ProfileToolRow: View {
         HStack(spacing: 12) {
             Image(systemName: iconName)
                 .font(.title3.weight(.bold))
-                .foregroundStyle(settings.accentColor)
+                .foregroundStyle(settings.darkMode ? Color(red: 0.17, green: 0.08, blue: 0.42) : Color.black)
                 .frame(width: 42, height: 42)
-                .background(settings.accentColor.opacity(0.12))
-                .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius))
+                .background(settings.darkMode ? Color(red: 0.86, green: 0.80, blue: 1.0) : AppTheme.primary.opacity(0.12))
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
-                    .font(.headline)
-                    .foregroundStyle(.primary)
+                    .font(.studyQuest(.headline, weight: .bold))
+                    .foregroundStyle(settings.primaryText)
                 Text(subtitle)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(.studyQuest(.subheadline, weight: .semibold))
+                    .foregroundStyle(settings.secondaryText)
             }
 
             Spacer()
             Image(systemName: "chevron.right")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(settings.secondaryText)
         }
         .padding(12)
-        .background(Color(.tertiarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.cornerRadius))
+        .background(settings.screenBackground)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.fieldRadius, style: .continuous))
     }
 }

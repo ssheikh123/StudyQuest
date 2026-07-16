@@ -55,10 +55,17 @@ struct DailyQuestCard: View {
                 Label("+\(quest.rewardCoins)", systemImage: "circle.hexagongrid.fill")
                 Spacer()
                 if quest.completed && !quest.claimed {
-                    Button("Claim Reward", action: claim)
-                        .font(.studyQuest(.caption, weight: .bold))
-                        .buttonStyle(.borderedProminent)
-                        .studyQuestButtonFeedback()
+                    Button(action: claim) {
+                        Text("Claim Reward")
+                            .font(.studyQuest(.caption, weight: .bold))
+                            .foregroundStyle(settings.darkMode ? Color(red: 0.17, green: 0.08, blue: 0.42) : Color.black)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(settings.darkMode ? Color(red: 0.86, green: 0.80, blue: 1.0) : AppTheme.primary.opacity(0.18))
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .studyQuestButtonFeedback()
                 }
             }
             .font(.studyQuest(.caption, weight: .bold))

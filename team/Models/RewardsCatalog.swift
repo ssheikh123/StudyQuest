@@ -3,6 +3,7 @@ import SwiftUI
 enum RewardsCatalog {
     static let dailyRewardCoins = 25
     static let lessonCompletionCoins = 10
+    static let levelUpCoins = 50
 
     static let shopItems: [ShopItem] = [
         ShopItem(id: "hat-graduation", title: "Scholar Cap", category: .hats, iconName: "graduationcap.fill", cost: 80, color: AppTheme.primary),

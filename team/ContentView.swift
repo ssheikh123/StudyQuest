@@ -5,6 +5,7 @@ struct ContentView: View {
     @State private var selectedTab = AppTab.home
     @State private var activeLesson: Lesson?
     @State private var hasFinishedLaunch = false
+    @State private var levelUpCelebration: LevelUpCelebration?
 
     private var settings: AppAccessibilitySettings {
         appState.settings.accessibility
@@ -20,19 +21,6 @@ struct ContentView: View {
                 if appState.profile.hasCompletedOnboarding {
                     mainAppView
                         .transition(settings.reduceMotion ? .identity : .opacity)
-                        .overlay(alignment: .topLeading) {
-                            Button(action: returnToLaunchScreen) {
-                                Image(systemName: "arrow.left")
-                                    .font(.headline.weight(.bold))
-                                    .frame(width: 44, height: 44)
-                                    .background(.regularMaterial)
-                                    .clipShape(Circle())
-                            }
-                            .studyQuestButtonFeedback()
-                            .accessibilityLabel("Back to launch screen")
-                            .padding(.top, 8)
-                            .padding(.leading, 12)
-                        }
                 } else {
                     OnboardingView(settings: settings, complete: completeOnboarding)
                         .transition(settings.reduceMotion ? .identity : .opacity)
@@ -45,6 +33,16 @@ struct ContentView: View {
                     start: startApp
                 )
                 .transition(settings.reduceMotion ? .identity : .opacity)
+            }
+
+            if let levelUpCelebration {
+                LevelUpCelebrationView(
+                    celebration: levelUpCelebration,
+                    settings: settings,
+                    dismiss: { self.levelUpCelebration = nil }
+                )
+                .transition(settings.reduceMotion ? .identity : .scale.combined(with: .opacity))
+                .zIndex(10)
             }
         }
         .tint(settings.accentColor)
@@ -117,7 +115,6 @@ struct ContentView: View {
                 level: level,
                 xp: appState.progress.xp,
                 progress: appState.progress.lessonProgress,
-                questData: appState.rewards.quests,
                 streakData: appState.rewards.streak,
                 settings: settings,
                 wallet: rewardsWalletBinding,
@@ -247,15 +244,26 @@ struct ContentView: View {
             appState.progress.xp = xp
             appState.rewards.wallet = wallet
 
+            let newLevel = Leveling.level(for: xp)
+            if newLevel > previousLevel {
+                let levelRewardCoins = RewardsService.awardLevelUpCoins(
+                    from: previousLevel,
+                    to: newLevel,
+                    wallet: &appState.rewards.wallet
+                )
+                levelUpCelebration = LevelUpCelebration(
+                    previousLevel: previousLevel,
+                    newLevel: newLevel,
+                    coinReward: levelRewardCoins
+                )
+            }
+
             FeedbackManager.questComplete()
             if quest.rewardXP > 0 {
                 FeedbackManager.gainXP()
             }
             if quest.rewardCoins > 0 {
                 FeedbackManager.earnCoins()
-            }
-            if Leveling.level(for: xp) > previousLevel {
-                FeedbackManager.levelUp()
             }
 
             saveAppState()
@@ -298,7 +306,7 @@ struct ContentView: View {
         saveAppState()
     }
 
-    private func completeLesson(_ lesson: Lesson) {
+    private func completeLesson(_ lesson: Lesson) -> LevelUpCelebration? {
         let previousLevel = level
         let previousCoins = appState.rewards.wallet.coins
         let previousCompletedQuestIDs = completedQuestIDs(in: appState.rewards.quests)
@@ -320,11 +328,12 @@ struct ContentView: View {
                 wallet: &appState.rewards.wallet,
                 learningFocusSubjectID: appState.profile.learningFocusSubjectID
             )
+            let newLevel = Leveling.level(for: xp)
             QuestManager.recordLessonCompletion(
                 lesson,
                 xpEarned: xpEarned,
                 questionsAnswered: lesson.quizQuestions.count,
-                level: Leveling.level(for: xp),
+                level: newLevel,
                 data: &appState.rewards.quests
             )
             if let streakReward = StreakManager.recordLessonCompletion(streak: &appState.rewards.streak) {
@@ -338,15 +347,28 @@ struct ContentView: View {
             }
             appState.rewards.dailyStreak = appState.rewards.streak.currentStreak
 
+            let celebration: LevelUpCelebration?
+            if newLevel > previousLevel {
+                let levelRewardCoins = RewardsService.awardLevelUpCoins(
+                    from: previousLevel,
+                    to: newLevel,
+                    wallet: &appState.rewards.wallet
+                )
+                celebration = LevelUpCelebration(
+                    previousLevel: previousLevel,
+                    newLevel: newLevel,
+                    coinReward: levelRewardCoins
+                )
+            } else {
+                celebration = nil
+            }
+
             FeedbackManager.finishLesson()
             if xpEarned > 0 {
                 FeedbackManager.gainXP()
             }
             if appState.rewards.wallet.coins > previousCoins {
                 FeedbackManager.earnCoins()
-            }
-            if Leveling.level(for: xp) > previousLevel {
-                FeedbackManager.levelUp()
             }
             if completedQuestIDs(in: appState.rewards.quests).subtracting(previousCompletedQuestIDs).isEmpty == false {
                 FeedbackManager.questComplete()
@@ -356,7 +378,10 @@ struct ContentView: View {
             }
 
             saveAppState()
+            return celebration
         }
+
+        return nil
     }
 
     private func configureFeedback() {

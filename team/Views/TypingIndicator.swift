@@ -16,7 +16,11 @@ struct TypingIndicator: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .background(settings.cardBackground)
+        .background(AppTheme.cardBackground(darkMode: settings.darkMode))
+        .overlay {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(settings.darkMode ? Color.white.opacity(0.08) : Color.black.opacity(0.04), lineWidth: 1)
+        }
         .clipShape(RoundedRectangle(cornerRadius: 18))
         .frame(maxWidth: .infinity, alignment: .leading)
         .onAppear {

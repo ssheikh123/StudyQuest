@@ -20,10 +20,15 @@ struct ChatBubble: View {
                 Text(.init(message.content))
                     .font(.studyQuest(.body, weight: .regular))
                     .foregroundStyle(isStudent ? .white : settings.primaryText)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 11)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
                     .background(bubbleBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .stroke(isStudent ? .clear : (settings.darkMode ? AppTheme.darkCardBorder : AppTheme.cardBorder), lineWidth: 1)
+                    )
+                    .shadow(color: isStudent || settings.darkMode ? .clear : AppTheme.cardShadow, radius: 14, x: 0, y: 6)
                     .textSelection(.enabled)
                     .contextMenu {
                         Button("Copy", action: copy)
@@ -53,7 +58,7 @@ struct ChatBubble: View {
 
     private var bubbleBackground: some ShapeStyle {
         if isStudent {
-            return AnyShapeStyle(settings.accentColor.gradient)
+            return AnyShapeStyle(AppTheme.primaryGradient)
         }
 
         if message.deliveryState == .failed {

@@ -3,7 +3,7 @@ import SwiftUI
 struct DashboardHeader: View {
     let learnerName: String
     let level: Int
-    let xp: Int
+    let xpUntilNextLevel: Int
     let coins: Int
     let avatarColor: AvatarColor
     let avatarAccessory: AvatarAccessory
@@ -29,7 +29,7 @@ struct DashboardHeader: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             HStack(alignment: .top, spacing: 14) {
-                AvatarPreview(color: avatarColor.color, accessory: avatarAccessory)
+                AvatarPreview(color: avatarColor.color, accessory: avatarAccessory, contentScale: 0.36, reduceMotion: true)
                     .frame(width: 54, height: 54)
                     .background(.white.opacity(0.15))
                     .clipShape(Circle())
@@ -59,7 +59,7 @@ struct DashboardHeader: View {
             }
 
             HStack(spacing: 14) {
-                AvatarPreview(color: avatarColor.color, accessory: avatarAccessory)
+                AvatarPreview(color: avatarColor.color, accessory: avatarAccessory, contentScale: 0.58, reduceMotion: true)
                     .frame(width: 94, height: 94)
                     .background(.white.opacity(settings.darkMode ? 0.08 : 0.15))
                     .clipShape(Circle())
@@ -68,7 +68,7 @@ struct DashboardHeader: View {
                 VStack(spacing: 10) {
                     HStack(spacing: 10) {
                         DashboardStatPill(title: "Level", value: "\(level)", iconName: "star.fill")
-                        DashboardStatPill(title: "XP", value: "\(xp)", iconName: "bolt.fill")
+                        DashboardStatPill(title: "EXP to Level", value: "\(xpUntilNextLevel)", iconName: "bolt.fill")
                     }
                     DashboardStatPill(title: "Coins", value: "\(coins)", iconName: "circle.hexagongrid.fill")
                 }

@@ -8,7 +8,7 @@ struct LessonDetailView: View {
     let settings: AppAccessibilitySettings
     let isDownloaded: Bool
     let close: () -> Void
-    let completeLesson: () -> Void
+    let completeLesson: () -> LevelUpCelebration?
     let toggleDownload: () -> Void
     let openNextLesson: (Lesson) -> Void
 
@@ -17,6 +17,7 @@ struct LessonDetailView: View {
     @State private var didCompleteLesson = false
     @State private var speechSynthesizer = AVSpeechSynthesizer()
     @State private var showsLearningAssistant = false
+    @State private var levelUpCelebration: LevelUpCelebration?
     @State private var hintIndexes: [String: Int] = [:]
     @State private var hintTextByQuestionID: [String: String] = [:]
 
@@ -115,6 +116,17 @@ struct LessonDetailView: View {
             }
             .sheet(isPresented: $showsLearningAssistant) {
                 LearningAssistantView(context: LessonContext(lesson: lesson), settings: settings)
+            }
+            .overlay {
+                if let levelUpCelebration {
+                    LevelUpCelebrationView(
+                        celebration: levelUpCelebration,
+                        settings: settings,
+                        dismiss: { self.levelUpCelebration = nil }
+                    )
+                    .transition(settings.reduceMotion ? .identity : .scale.combined(with: .opacity))
+                    .zIndex(10)
+                }
             }
         }
     }
@@ -264,7 +276,7 @@ struct LessonDetailView: View {
             FeedbackManager.quizCorrect()
             didCompleteLesson = true
             feedbackText = "Correct! XP added and the next lesson is unlocked."
-            completeLesson()
+            levelUpCelebration = completeLesson()
         } else {
             FeedbackManager.quizWrong()
             feedbackText = "Not quite. Review your answers and try again."

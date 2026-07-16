@@ -4,7 +4,6 @@ struct RewardsView: View {
     let level: Int
     let xp: Int
     let progress: LessonProgress
-    let questData: QuestData
     let streakData: StreakData
     let settings: AppAccessibilitySettings
     @Binding var wallet: RewardsWallet
@@ -22,7 +21,7 @@ struct RewardsView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    RewardsSummaryCard(level: level, xp: xp, coins: wallet.coins, settings: settings)
+                    RewardsSummaryCard(level: level, coins: wallet.coins, settings: settings)
 
                     RewardCard(
                         title: "Player Progress",
@@ -39,7 +38,6 @@ struct RewardsView: View {
                         claim: claimDailyReward
                     )
 
-                    questsPreviewSection
                     badgesSection
                     shopSection
                     futureRewardsSection
@@ -54,15 +52,6 @@ struct RewardsView: View {
                     message: Text(message.body),
                     dismissButton: .default(Text("OK"))
                 )
-            }
-        }
-    }
-
-    private var questsPreviewSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            SectionHeader(title: "Daily Quests", subtitle: "Claim quest rewards from Home")
-            ForEach(questData.quests) { quest in
-                DailyQuestCard(quest: quest, settings: settings) { }
             }
         }
     }

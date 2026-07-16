@@ -38,7 +38,7 @@ struct AIChatView: View {
                 .font(.title2.weight(.bold))
                 .foregroundStyle(.white)
                 .frame(width: 52, height: 52)
-                .background(settings.accentColor.gradient)
+                .background(AppTheme.primaryGradient)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
                 .accessibilityHidden(true)
 
@@ -56,7 +56,7 @@ struct AIChatView: View {
             Spacer(minLength: 0)
         }
         .padding(14)
-        .background(settings.cardBackground)
+        .background(AppTheme.cardBackground(darkMode: settings.darkMode))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("AI tutor for \(viewModel.lessonContext.lessonTitle)")
     }

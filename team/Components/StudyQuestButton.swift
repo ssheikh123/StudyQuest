@@ -11,10 +11,16 @@ struct PrimaryButton: View {
             Label(title, systemImage: iconName)
                 .font(.studyQuest(.headline, weight: .bold))
                 .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 15)
-                .background(color.gradient)
-                .clipShape(RoundedRectangle(cornerRadius: AppTheme.buttonRadius))
+                .frame(maxWidth: .infinity, minHeight: 56)
+                .background(
+                    LinearGradient(
+                        colors: [color, color.opacity(0.78)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.buttonRadius, style: .continuous))
+                .shadow(color: color.opacity(0.24), radius: 16, x: 0, y: 8)
         }
         .buttonStyle(.plain)
         .studyQuestButtonFeedback()
@@ -32,11 +38,14 @@ struct SecondaryButton: View {
         Button(action: action) {
             Label(title, systemImage: iconName)
                 .font(.studyQuest(.headline, weight: .bold))
-                .foregroundStyle(color)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(color.opacity(0.12))
-                .clipShape(RoundedRectangle(cornerRadius: AppTheme.buttonRadius))
+                .foregroundStyle(Color.primary)
+                .frame(maxWidth: .infinity, minHeight: 56)
+                .background(Color(.secondarySystemGroupedBackground))
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.buttonRadius, style: .continuous)
+                        .stroke(color.opacity(0.28), lineWidth: 1.5)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.buttonRadius, style: .continuous))
         }
         .buttonStyle(.plain)
         .studyQuestButtonFeedback()

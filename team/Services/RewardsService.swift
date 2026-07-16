@@ -35,4 +35,12 @@ enum RewardsService {
     static func coinReward(for lesson: Lesson, learningFocusSubjectID: String?) -> Int {
         RewardsCatalog.lessonCompletionCoins + (lesson.subjectID == learningFocusSubjectID ? 5 : 0)
     }
+
+    @discardableResult
+    static func awardLevelUpCoins(from previousLevel: Int, to newLevel: Int, wallet: inout RewardsWallet) -> Int {
+        let levelsGained = max(0, newLevel - previousLevel)
+        let coins = levelsGained * RewardsCatalog.levelUpCoins
+        wallet.coins += coins
+        return coins
+    }
 }

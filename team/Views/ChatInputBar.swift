@@ -17,7 +17,7 @@ struct ChatInputBar: View {
                 .lineLimit(1...4)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
-                .background(settings.cardBackground)
+                .background(AppTheme.cardBackground(darkMode: settings.darkMode))
                 .clipShape(RoundedRectangle(cornerRadius: AppTheme.fieldRadius))
                 .accessibilityLabel("Message to AI tutor")
 
@@ -33,13 +33,24 @@ struct ChatInputBar: View {
                         .frame(width: 44, height: 44)
                 }
             }
-            .background(canSend ? settings.accentColor.gradient : Color.secondary.opacity(0.45).gradient)
+            .background {
+                if canSend {
+                    AppTheme.primaryGradient
+                } else {
+                    Color.secondary.opacity(0.45)
+                }
+            }
             .clipShape(Circle())
             .disabled(!canSend)
             .studyQuestButtonFeedback()
             .accessibilityLabel("Send message")
         }
         .padding(14)
-        .background(.regularMaterial)
+        .background(AppTheme.cardBackground(darkMode: settings.darkMode).opacity(settings.darkMode ? 0.98 : 0.94))
+        .overlay(alignment: .top) {
+            Rectangle()
+                .fill(settings.darkMode ? Color.white.opacity(0.08) : Color.black.opacity(0.05))
+                .frame(height: 1)
+        }
     }
 }
