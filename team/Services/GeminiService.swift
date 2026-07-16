@@ -55,10 +55,9 @@ struct GeminiService {
         }
     }
 
-    // Sends a prompt to Gemini using what is included in the message to the AI.
+    // Sends a prompt to Gemini and returns the AI's response.
     func send(request promptRequest: AIPromptRequest) async throws -> String {
-        // PromptBuilder already optimized the lesson context and recent chat history.
-        // This layer only translates that provider-agnostic prompt into Gemini's shape.
+        // Convert the app's prompt into Gemini's request format.
         let request = GeminiGenerateContentRequest(
             systemInstruction: GeminiContent(
                 role: nil,
@@ -66,30 +65,31 @@ struct GeminiService {
             ),
             contents: promptRequest.input.map(GeminiContent.init(message:)),
             generationConfig: GeminiGenerationConfig(
-                // Higher temperature for more creative responses, lower for direct
-                // More output tokens for more words output
+                // Controls creativity and response length.
                 temperature: 0.55,
                 maxOutputTokens: 320
             )
         )
-
-        
         var lastError: Error?
-        // Exponential backoff handles temporary Gemini/API/network problems without
-        // making the student manually retry every transient failure.
+        // Retry temporary failures before giving up.
         for attempt in 0...configuration.maxRetryCount {
             do {
                 return try await perform(request)
             } catch {
                 let serviceError = mapError(error)
-                guard shouldRetry(serviceError), attempt < configuration.maxRetryCount else {
+                // Stop retrying if the error isn't recoverable or retries are exhausted.
+                guard shouldRetry(serviceError),
+                      attempt < configuration.maxRetryCount else {
                     throw serviceError
                 }
                 lastError = serviceError
-                try await Task.sleep(nanoseconds: UInt64(pow(2.0, Double(attempt)) * 500_000_000))
+                // Wait a little longer before each retry.
+                try await Task.sleep(
+                    nanoseconds: UInt64(pow(2.0, Double(attempt)) * 500_000_000)
+                )
             }
         }
-
+        // Return the final error if all retries fail.
         throw mapError(lastError ?? GeminiServiceError.unavailable)
     }
 
