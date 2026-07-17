@@ -122,7 +122,10 @@ struct LessonDetailView: View {
                     LevelUpCelebrationView(
                         celebration: levelUpCelebration,
                         settings: settings,
-                        dismiss: { self.levelUpCelebration = nil }
+                        dismiss: {
+                            self.levelUpCelebration = nil
+                            close()
+                        }
                     )
                     .transition(settings.reduceMotion ? .identity : .scale.combined(with: .opacity))
                     .zIndex(10)

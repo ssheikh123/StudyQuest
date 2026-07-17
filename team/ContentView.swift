@@ -39,7 +39,10 @@ struct ContentView: View {
                 LevelUpCelebrationView(
                     celebration: levelUpCelebration,
                     settings: settings,
-                    dismiss: { self.levelUpCelebration = nil }
+                    dismiss: {
+                        selectedTab = .home
+                        self.levelUpCelebration = nil
+                    }
                 )
                 .transition(settings.reduceMotion ? .identity : .scale.combined(with: .opacity))
                 .zIndex(10)
