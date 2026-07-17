@@ -6,6 +6,10 @@ struct DifficultyCard: View {
     let completedCount: Int
     let isUnlocked: Bool
     let settings: AppAccessibilitySettings
+    var statusText: String? = nil
+    var statusBadge: String? = nil
+    var showsProgress = true
+    var showsNavigationIndicator = true
 
     private var progress: Double {
         guard lessonCount > 0 else { return 0 }
@@ -26,23 +30,23 @@ struct DifficultyCard: View {
                     Text(difficulty.rawValue)
                         .font(.studyQuest(.headline, weight: .bold))
                         .foregroundStyle(settings.primaryText)
-                    if !isUnlocked {
-                        Text("Locked")
-                            .font(.studyQuest(.caption, weight: .bold))
-                            .foregroundStyle(settings.secondaryText)
-                    }
+                    Text(statusBadge ?? (isUnlocked ? "Unlocked" : "Locked"))
+                        .font(.studyQuest(.caption, weight: .bold))
+                        .foregroundStyle(isUnlocked ? difficulty.color : settings.secondaryText)
                 }
 
-                Text(lessonCount > 0 ? "\(lessonCount) lessons" : "Coming soon")
+                Text(statusText ?? "\(lessonCount) lessons")
                     .font(.studyQuest(.subheadline, weight: .semibold))
                     .foregroundStyle(settings.secondaryText)
 
-                ProgressBar(value: progress, tint: isUnlocked ? difficulty.color : .secondary)
-                    .frame(height: 8)
+                if showsProgress {
+                    ProgressBar(value: progress, tint: isUnlocked ? difficulty.color : .secondary)
+                        .frame(height: 8)
+                }
             }
 
             Spacer()
-            Image(systemName: isUnlocked && lessonCount > 0 ? "chevron.right" : "lock.fill")
+            Image(systemName: isUnlocked && showsNavigationIndicator && lessonCount > 0 ? "chevron.right" : "lock.fill")
                 .font(.caption.weight(.bold))
                 .foregroundStyle(.tertiary)
         }
